@@ -65,7 +65,7 @@ export default function Home() {
             <FadeIn direction="left">
               <div className="relative aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-strong">
                 <Image
-                  src="/images/profile-photo.webp"
+                  src="/images/15596403.jpg"
                   alt="Maria-Lena Pietri - Assistante Administrative"
                   width={800}
                   height={800}

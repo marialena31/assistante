@@ -1,10 +1,16 @@
 import { motion } from 'framer-motion';
+import { HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
 
 interface StaggerChildrenProps {
   children: ReactNode;
   delay?: number;
   staggerDelay?: number;
+  className?: string;
+}
+
+interface StaggerItemProps extends HTMLMotionProps<"div"> {
+  children: ReactNode;
   className?: string;
 }
 
@@ -34,15 +40,10 @@ export default function StaggerChildren({
   );
 }
 
-export const StaggerItem = ({ children, className = '' }: { children: ReactNode; className?: string }) => (
-  <motion.div
-    variants={{
-      hidden: { opacity: 0, y: 20 },
-      visible: { opacity: 1, y: 0 },
-    }}
-    transition={{ duration: 0.5 }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+export const StaggerItem: React.FC<StaggerItemProps> = ({ children, className, ...props }) => {
+  return (
+    <motion.div className={className} {...props}>
+      {children}
+    </motion.div>
+  );
+};

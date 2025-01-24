@@ -1,53 +1,92 @@
-import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
+import { FormEvent, useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
 import FadeIn from '../components/animations/FadeIn';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import emailjs from '@emailjs/browser';
+import DOMPurify from 'dompurify';
 
-type FormData = {
+interface FormData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   message: string;
-};
+}
 
 const inputClasses = "mt-1 block w-full rounded-lg border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary focus:ring-primary sm:text-sm";
 const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
 const errorClasses = "mt-1 text-sm text-red-600";
 
 export default function Contact() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<FormData>();
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [formErrors, setErrors] = useState<{ [key: string]: { message: string } }>({});
+
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
-    setSubmitStatus('idle');
+    setSubmitStatus(null);
+
+    const sanitizedData = {
+      firstName: DOMPurify.sanitize(data.firstName),
+      lastName: DOMPurify.sanitize(data.lastName),
+      email: DOMPurify.sanitize(data.email),
+      phone: DOMPurify.sanitize(data.phone),
+      message: DOMPurify.sanitize(data.message),
+  };
+
+  // Error handling
+  const newErrors = {};
+  if (!sanitizedData.firstName) newErrors.firstName = 'First name is required';
+  if (!sanitizedData.email) newErrors.email = 'Email is required';
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+}
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        {
+          from_name: `${data.firstName} ${data.lastName}`,
+          from_email: data.email,
+          phone: data.phone,
+          message: data.message,
         },
-        body: JSON.stringify(data),
-      });
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+      );
 
-      if (response.ok) {
-        setSubmitStatus('success');
-        reset();
-      } else {
-        setSubmitStatus('error');
-      }
+      setSubmitStatus('success');
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        message: ''
+      });
     } catch (error) {
+      console.error('Email error:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -128,142 +167,93 @@ export default function Contact() {
             {/* Contact Form */}
             <FadeIn direction="left">
               <div className="bg-white rounded-xl shadow-strong p-6 lg:p-8">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="firstName" className={labelClasses}>
-                        Prénom
-                      </label>
-                      <input
-                        type="text"
-                        id="firstName"
-                        {...register('firstName', { required: true })}
-                        className={inputClasses}
-                      />
-                      {errors.firstName && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={errorClasses}
-                        >
-                          Ce champ est requis
-                        </motion.p>
-                      )}
-                    </div>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate={true}>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label htmlFor="firstName" className={labelClasses}>
+        Prénom
+      </label>
+      <input
+        type="text"
+        id="firstName"
+        {...register("firstName")}
+        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        required
+      />
+{formErrors.firstName && <span className={errorClasses}>{formErrors.firstName.message}</span>}
+</div>
+    <div>
+      <label htmlFor="lastName" className={labelClasses}>
+        Nom
+      </label>
+      <input
+        type="text"
+        id="lastName"
+        {...register("lastName")}
+        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        required
+      />
+{formErrors.lastName && <span className={errorClasses}>{formErrors.lastName.message}</span>}
 
-                    <div>
-                      <label htmlFor="lastName" className={labelClasses}>
-                        Nom
-                      </label>
-                      <input
-                        type="text"
-                        id="lastName"
-                        {...register('lastName', { required: true })}
-                        className={inputClasses}
-                      />
-                      {errors.lastName && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className={errorClasses}
-                        >
-                          Ce champ est requis
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
+    </div>
+  </div>
 
-                  <div>
-                    <label htmlFor="email" className={labelClasses}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      {...register('email', {
-                        required: true,
-                        pattern: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      })}
-                      className={inputClasses}
-                    />
-                    {errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={errorClasses}
-                      >
-                        Veuillez entrer une adresse email valide
-                      </motion.p>
-                    )}
-                  </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <label htmlFor="email" className={labelClasses}>
+        Email
+      </label>
+      <input
+        type="email"
+        id="email"
+        {...register("email")}
+        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        required
+      />
+{formErrors.email && <span className={errorClasses}>{formErrors.email.message}</span>}
 
-                  <div>
-                    <label htmlFor="phone" className={labelClasses}>
-                      Téléphone
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      {...register('phone')}
-                      className={inputClasses}
-                    />
-                  </div>
+    </div>
+    <div>
+      <label htmlFor="phone" className={labelClasses}>
+        Téléphone
+      </label>
+      <input
+        type="tel"
+        id="phone"
+        {...register("phone")}
+        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+        required
+      />
+{formErrors.phone && <span className={errorClasses}>{formErrors.phone.message}</span>}
 
-                  <div>
-                    <label htmlFor="message" className={labelClasses}>
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      rows={4}
-                      {...register('message', { required: true })}
-                      className={inputClasses}
-                    />
-                    {errors.message && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={errorClasses}
-                      >
-                        Ce champ est requis
-                      </motion.p>
-                    )}
-                  </div>
+    </div>
+  </div>
 
-                  <div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full btn btn-primary"
-                    >
-                      {isSubmitting ? (
-                        <LoadingSpinner />
-                      ) : (
-                        'Envoyer le message'
-                      )}
-                    </button>
+  <div>
+    <label htmlFor="message" className={labelClasses}>
+      Message
+    </label>
+    <textarea
+      id="message"
+      {...register("message")}
+      rows={4}
+      className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+      required
+    />
+{formErrors.message && <span className={errorClasses}>{formErrors.message.message}</span>}
 
-                    {submitStatus === 'success' && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 text-sm text-green-600"
-                      >
-                        Message envoyé avec succès ! Je vous répondrai dans les 24h.
-                      </motion.p>
-                    )}
+  </div>
 
-                    {submitStatus === 'error' && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-4 text-sm text-red-600"
-                      >
-                        Une erreur est survenue. Veuillez réessayer plus tard.
-                      </motion.p>
-                    )}
-                  </div>
-                </form>
+  <div className="flex justify-end">
+  <button 
+  type="submit" 
+  className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+>
+  Send
+</button>
+
+  </div>
+</form>
               </div>
             </FadeIn>
           </div>
