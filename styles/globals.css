@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 15, 23, 42;
+  --background-rgb: 255, 255, 255;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-light text-dark antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 
+           rounded-lg font-medium text-base shadow-soft
+           transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-light hover:bg-primary/90 hover:shadow-strong 
+           hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-light hover:bg-accent/90 hover:shadow-strong
+           hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary bg-light/90
+           hover:bg-primary hover:text-light hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
+  .card {
+    @apply bg-light rounded-xl shadow-soft p-6 transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:shadow-strong hover:-translate-y-1;
+  }
+
+  .section {
+    @apply py-16 sm:py-24;
+  }
+
+  .section-sm {
+    @apply py-12 sm:py-16;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  .h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold;
+  }
+
+  .h2 {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+
+  .h3 {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out forwards;
+  }
+}
