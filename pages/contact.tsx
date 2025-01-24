@@ -55,15 +55,14 @@ export default function Contact() {
   };
 
   // Error handling
-  const newErrors = {};
-  if (!sanitizedData.firstName) newErrors.firstName = 'First name is required';
-  if (!sanitizedData.email) newErrors.email = 'Email is required';
-
+  const newErrors: { [key: string]: { message: string } } = {};
+  if (!sanitizedData.firstName) newErrors.firstName = { message: 'First name is required' };
+  if (!sanitizedData.email) newErrors.email = { message: 'Email is required' };
+  
   if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-}
-
+      setErrors(newErrors);
+      return;
+  }
     try {
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
