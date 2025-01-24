@@ -33,11 +33,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/tarifs" className="text-gray-300 hover:text-white transition-all">
-                  Tarifs
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="text-gray-300 hover:text-white transition-all">
                   Contact
                 </Link>
@@ -54,11 +49,11 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="tel:+33600000000" className="hover:text-white transition-all">
-                  +33 6 00 00 00 00
+                <a href="tel:+33761811101" className="hover:text-white transition-all">
+                  +33 7 61 81 11 01
                 </a>
               </li>
-              <li>Basée à Ajaccio, Corse</li>
+              <li>Colomiers, France</li>
               <li>Disponible en télétravail</li>
             </ul>
           </div>
@@ -70,10 +65,10 @@ export default function Footer() {
               {new Date().getFullYear()} Maria-Lena Pietri. Tous droits réservés.
             </p>
             <div className="flex gap-6">
-              <Link href="/mentions-legales" className="text-gray-400 hover:text-white transition-all">
+              <Link href="/mentions-legales" className="text-gray-400 hover:text-white transition-all text-sm">
                 Mentions légales
               </Link>
-              <Link href="/confidentialite" className="text-gray-400 hover:text-white transition-all">
+              <Link href="/politique-confidentialite" className="text-gray-400 hover:text-white transition-all text-sm">
                 Politique de confidentialité
               </Link>
             </div>

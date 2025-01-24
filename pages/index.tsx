@@ -26,8 +26,8 @@ const services = [
 
 const stats = [
   { number: 95, suffix: '%', label: 'Satisfaction Client' },
-  { number: 50, suffix: '+', label: 'Projets Réalisés' },
-  { number: 5, suffix: '+', label: 'Années d\'Expérience' },
+  { number: 30, suffix: '+', label: 'Clients accompagnés' },
+  { number: 20, suffix: '+', label: 'Années d\'Expérience' },
   { number: 24, suffix: 'h', label: 'Délai de Réponse' },
 ];
 
@@ -65,12 +65,11 @@ export default function Home() {
             <FadeIn direction="left">
               <div className="relative aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-strong">
                 <Image
-                  src="/images/profile-photo.jpg"
+                  src="/images/profile-photo.webp"
                   alt="Maria-Lena Pietri - Assistante Administrative"
-                  fill
+                  width={800}
+                  height={800}
                   className="object-cover hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  quality={95}
                   priority
                 />
               </div>

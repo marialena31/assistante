@@ -63,7 +63,7 @@ export default function About() {
                   className="relative w-full h-full rounded-lg overflow-hidden shadow-xl"
                 >
                   <Image
-                    src="/images/profile-photo.jpg"
+                    src="/images/15596403.jpg"
                     alt="Maria-Lena Pietri"
                     fill
                     style={{ objectFit: 'cover' }}

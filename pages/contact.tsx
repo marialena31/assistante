@@ -91,7 +91,7 @@ export default function Contact() {
                     <div className="text-2xl text-primary">📱</div>
                     <div>
                       <h3 className="font-medium text-dark">Téléphone</h3>
-                      <p className="text-gray-600">+33 X XX XX XX XX</p>
+                      <p className="text-gray-600">+33 7 61 81 11 01</p>
                     </div>
                   </motion.div>
 
@@ -117,7 +117,7 @@ export default function Contact() {
                     <div>
                       <h3 className="font-medium text-dark">Réponse</h3>
                       <p className="text-gray-600">
-                        Je vous réponds sous 48h maximum
+                        Je vous réponds sous 24h maximum
                       </p>
                     </div>
                   </motion.div>
@@ -249,7 +249,7 @@ export default function Contact() {
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-4 text-sm text-green-600"
                       >
-                        Message envoyé avec succès ! Je vous répondrai dans les plus brefs délais.
+                        Message envoyé avec succès ! Je vous répondrai dans les 24h.
                       </motion.p>
                     )}
 

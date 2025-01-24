@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CustomHead from './Head';
+import CookieConsent from '../ui/CookieConsent';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export default function Layout({ children, title, description }: LayoutProps) {
         {children}
       </main>
       <Footer />
+      <CookieConsent />
     </div>
   );
 }
