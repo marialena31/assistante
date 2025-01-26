@@ -3,15 +3,17 @@ import { motion } from 'framer-motion';
 interface LoadingSpinnerProps {
   size?: number;
   color?: string;
+  className?: string;
 }
 
 export default function LoadingSpinner({
   size = 24,
   color = 'currentColor',
+  className = '',
 }: LoadingSpinnerProps) {
   return (
     <motion.div
-      className="inline-block"
+      className={`inline-block ${className}`}
       style={{
         width: size,
         height: size,
