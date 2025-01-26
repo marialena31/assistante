@@ -4,64 +4,63 @@ import StaggerChildren, { StaggerItem } from '../components/animations/StaggerCh
 import { motion } from 'framer-motion';
 import Counter from '../components/animations/Counter';
 
-const services = [
-  {
-    category: 'Gestion administrative et organisation',
-    items: [
-      'Gestion du courrier et des emails',
-      'Classement et archivage numérique',
-      'Création et mise à jour de bases de données',
-      'Rédaction de courriers et documents administratifs',
-      'Organisation de déplacements professionnels'
-    ]
-  },
-  {
-    category: 'Comptabilité et contrôle de gestion',
-    items: [
-      'Saisie et suivi des factures',
-      'Gestion des notes de frais',
-      'Suivi des règlements',
-      'Préparation des documents comptables',
-      'Reporting et tableaux de bord'
-    ]
-  },
-  {
-    category: 'Commerce et relation client',
-    items: [
-      'Gestion du service client',
-      'Suivi des commandes et livraisons',
-      'Mise à jour des fichiers clients',
-      'Gestion des réclamations',
-      'Support commercial'
-    ]
-  },
-  {
-    category: 'Marketing et gestion digitale',
-    items: [
-      'Gestion des réseaux sociaux',
-      'Création de contenus',
-      'Newsletter et emailing',
-      'Mise à jour de site web',
-      'Veille concurrentielle'
-    ]
-  },
-  {
-    category: 'Coordination et gestion RH',
-    items: [
-      'Gestion des plannings',
-      'Organisation de réunions',
-      'Suivi des congés',
-      'Administration du personnel',
-      'Support au recrutement'
-    ]
-  }
-];
 
 const stats = [
-  { number: 8, suffix: '+', label: "Années d'expérience" },
-  { number: 50, suffix: '+', label: 'Clients satisfaits' },
-  { number: 1000, suffix: '+', label: 'Projets réalisés' },
+  { number: 20, suffix: '+', label: "Années d'expérience" },
+  { number: 30, suffix: '+', label: 'Clients satisfaits' },
+  { number: 50, suffix: '+', label: 'Projets réalisés' },
   { number: 100, suffix: '%', label: 'Engagement' },
+];
+
+const services = [
+  {
+    category: 'A. Gestion Administrative et Organisation',
+    items: [
+      'Organisation des dossiers et suivi des plannings.',
+      'Contrôle documentaire, archivage, et rédaction de courriers.',
+      'Assistance à la préparation de dossiers (marchés publics, audits).'
+    ]
+  },
+  {
+    category: 'B. Assistance RH',
+    items: [
+      'Gestion des arrivées/départs : matériel et logiciel.',
+      'Rédaction d’annonces et tri des candidatures.',
+      'Coordination des formations et suivi administratif des équipes.'
+    ]
+  },
+  {
+    category: 'C. Contrôle de Gestion et finance',
+    items: [
+      'Préparation des dossiers pour le cabinet comptable, suivi des factures/paiements.',
+      'Gestion de trésorerie et analyse des coûts.',
+      'Création de tableaux de bord et reporting à la direction.'
+    ]
+  },
+  {
+    category: 'D. Assistance Commerciale et Marketing',
+    items: [
+      'Élaboration de devis, gestion des commandes, et facturation.',
+      'Création et gestion de catalogues papier et e-commerce.',
+      'Organisation de campagnes marketing et gestion des réseaux sociaux.'
+    ]
+  },
+  {
+    category: 'E. Assistance Juridique',
+    items: [
+      'Préparation des documents juridiques et suivi des procédures judiciaires.',
+      'Coordination avec les avocats, notaires et huissiers.',
+      'Veille réglementaire et conformité RGPD.'
+    ]
+  },
+  {
+    category: 'F. Gestion de Projets et Cybersécurité',
+    items: [
+      'Utilisation des méthodologies Agile pour le suivi des projets.',
+      'Surveillance des pratiques de sécurité et analyse des risques (formation cybersécurité).',
+      'Gestion et maintenance de sites web (WordPress, Magento).'
+    ]
+  }
 ];
 
 export default function Services() {

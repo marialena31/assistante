@@ -44,31 +44,29 @@ export default function Home() {
             <FadeIn direction="right">
               <div className="space-y-6">
                 <h1 className="h1 text-gradient">
-                  Votre Assistante Administrative Freelance
+                  Votre assistante freelance polyvalente.
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
-                  Je vous accompagne dans la gestion et l'organisation de vos tâches
-                  administratives pour vous permettre de vous concentrer sur
-                  l'essentiel : votre activité.
+                  Forte d'une expérience diversifiée dans l'assistanat, la gestion de projets et le commerce, je mets mon expertise à votre service pour vous faire gagner du temps et de l'efficacité.
                 </p>
                 <div className="flex flex-wrap gap-4 pt-4">
                   <AnimatedButton href="/services" variant="primary">
-                    Découvrir mes services
+                    Découvrez mes services
                   </AnimatedButton>
                   <AnimatedButton href="/contact" variant="outline">
-                    Me contacter
+                    Contactez-moi dès aujourd’hui pour un devis gratuit.
                   </AnimatedButton>
                 </div>
               </div>
             </FadeIn>
 
             <FadeIn direction="left">
-              <div className="relative aspect-[4/3] lg:aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-strong">
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-strong">
                 <Image
-                  src="/images/15596403.jpg"
-                  alt="Maria-Lena Pietri - Assistante Administrative"
-                  width={800}
-                  height={800}
+                  src="/images/hero.jpg"
+                  alt="Photo Professionnelle"
+                  width={1024}
+                  height={768}
                   className="object-cover hover:scale-105 transition-transform duration-300"
                   priority
                 />

@@ -1,5 +1,5 @@
-import { useForm, SubmitHandler, FieldValues } from 'react-hook-form';
-import { FormEvent, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
 import FadeIn from '../components/animations/FadeIn';
@@ -19,30 +19,39 @@ const inputClasses = "mt-1 block w-full rounded-lg border-gray-300 bg-white px-4
 const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
 const errorClasses = "mt-1 text-sm text-red-600";
 
-export default function Contact() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    message: ''
-  });
+// EmailJS configuration
+const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!;
+const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!;
+const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;
 
+export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
-  const [formErrors, setErrors] = useState<{ [key: string]: { message: string } }>({});
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  useEffect(() => {
+    if (!EMAILJS_PUBLIC_KEY) {
+      console.error('EmailJS public key is not defined');
+      return;
+    }
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors }
+  } = useForm<FormData>({
+    mode: 'onBlur'
+  });
+
   const onSubmit = async (data: FormData) => {
+    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
+      console.error('EmailJS configuration is incomplete');
+      setSubmitStatus('error');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus(null);
 
@@ -52,38 +61,26 @@ export default function Contact() {
       email: DOMPurify.sanitize(data.email),
       phone: DOMPurify.sanitize(data.phone),
       message: DOMPurify.sanitize(data.message),
-  };
+    };
 
-  // Error handling
-  const newErrors: { [key: string]: { message: string } } = {};
-  if (!sanitizedData.firstName) newErrors.firstName = { message: 'First name is required' };
-  if (!sanitizedData.email) newErrors.email = { message: 'Email is required' };
-  
-  if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-  }
     try {
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        {
-          from_name: `${data.firstName} ${data.lastName}`,
-          from_email: data.email,
-          phone: data.phone,
-          message: data.message,
-        },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY
+      const templateParams = {
+        user_name: `${sanitizedData.firstName} ${sanitizedData.lastName}`,
+        user_email: sanitizedData.email,
+        user_phone: sanitizedData.phone,
+        message: sanitizedData.message
+      };
+
+      const response = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
       );
 
+      console.log('Email sent successfully:', response);
       setSubmitStatus('success');
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: '',
-        message: ''
-      });
+      reset();
     } catch (error) {
       console.error('Email error:', error);
       setSubmitStatus('error');
@@ -166,93 +163,128 @@ export default function Contact() {
             {/* Contact Form */}
             <FadeIn direction="left">
               <div className="bg-white rounded-xl shadow-strong p-6 lg:p-8">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate={true}>
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <label htmlFor="firstName" className={labelClasses}>
-        Prénom
-      </label>
-      <input
-        type="text"
-        id="firstName"
-        {...register("firstName")}
-        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-        required
-      />
-{formErrors.firstName && <span className={errorClasses}>{formErrors.firstName.message}</span>}
-</div>
-    <div>
-      <label htmlFor="lastName" className={labelClasses}>
-        Nom
-      </label>
-      <input
-        type="text"
-        id="lastName"
-        {...register("lastName")}
-        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-        required
-      />
-{formErrors.lastName && <span className={errorClasses}>{formErrors.lastName.message}</span>}
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate={true}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="firstName" className={labelClasses}>
+                        Prénom*
+                      </label>
+                      <input
+                        type="text"
+                        name="user_name"
+                        id="firstName"
+                        {...register("firstName", { required: "Le prénom est requis" })}
+                        className={inputClasses}
+                      />
+                      {errors.firstName && (
+                        <span className={errorClasses}>{errors.firstName.message}</span>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="lastName" className={labelClasses}>
+                        Nom*
+                      </label>
+                      <input
+                        type="text"
+                        name="user_lastname"
+                        id="lastName"
+                        {...register("lastName", { required: "Le nom est requis" })}
+                        className={inputClasses}
+                      />
+                      {errors.lastName && (
+                        <span className={errorClasses}>{errors.lastName.message}</span>
+                      )}
+                    </div>
+                  </div>
 
-    </div>
-  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="email" className={labelClasses}>
+                        Email*
+                      </label>
+                      <input
+                        type="email"
+                        name="user_email"
+                        id="email"
+                        {...register("email", {
+                          required: "L'email est requis",
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: "Adresse email invalide"
+                          }
+                        })}
+                        className={inputClasses}
+                      />
+                      {errors.email && (
+                        <span className={errorClasses}>{errors.email.message}</span>
+                      )}
+                    </div>
+                    <div>
+                      <label htmlFor="phone" className={labelClasses}>
+                        Téléphone*
+                      </label>
+                      <input
+                        type="tel"
+                        name="user_phone"
+                        id="phone"
+                        {...register("phone", {
+                          required: "Le numéro de téléphone est requis",
+                          pattern: {
+                            value: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/,
+                            message: "Numéro de téléphone invalide"
+                          }
+                        })}
+                        className={inputClasses}
+                      />
+                      {errors.phone && (
+                        <span className={errorClasses}>{errors.phone.message}</span>
+                      )}
+                    </div>
+                  </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <label htmlFor="email" className={labelClasses}>
-        Email
-      </label>
-      <input
-        type="email"
-        id="email"
-        {...register("email")}
-        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-        required
-      />
-{formErrors.email && <span className={errorClasses}>{formErrors.email.message}</span>}
+                  <div>
+                    <label htmlFor="message" className={labelClasses}>
+                      Message*
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      {...register("message", { required: "Le message est requis" })}
+                      rows={4}
+                      className={inputClasses}
+                    />
+                    {errors.message && (
+                      <span className={errorClasses}>{errors.message.message}</span>
+                    )}
+                  </div>
 
-    </div>
-    <div>
-      <label htmlFor="phone" className={labelClasses}>
-        Téléphone
-      </label>
-      <input
-        type="tel"
-        id="phone"
-        {...register("phone")}
-        className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-        required
-      />
-{formErrors.phone && <span className={errorClasses}>{formErrors.phone.message}</span>}
-
-    </div>
-  </div>
-
-  <div>
-    <label htmlFor="message" className={labelClasses}>
-      Message
-    </label>
-    <textarea
-      id="message"
-      {...register("message")}
-      rows={4}
-      className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-      required
-    />
-{formErrors.message && <span className={errorClasses}>{formErrors.message.message}</span>}
-
-  </div>
-
-  <div className="flex justify-end">
-  <button 
-  type="submit" 
-  className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
->
-  Send
-</button>
-
-  </div>
-</form>
+                  <div className="mt-6">
+                    {submitStatus === 'success' && (
+                      <div className="mb-4 p-4 bg-green-50 text-green-700 rounded-lg">
+                        Message envoyé avec succès ! Je vous répondrai dans les plus brefs délais.
+                      </div>
+                    )}
+                    {submitStatus === 'error' && (
+                      <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg">
+                        Une erreur est survenue. Veuillez réessayer ou me contacter directement par email.
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full rounded-lg bg-primary px-4 py-3 text-white hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center">
+                          <LoadingSpinner className="w-5 h-5 mr-2" />
+                          Envoi en cours...
+                        </span>
+                      ) : (
+                        "Envoyer"
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             </FadeIn>
           </div>
