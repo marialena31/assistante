@@ -111,6 +111,72 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Sectors Section */}
+      {indexContent.sectors && (
+        <section className="section bg-white">
+          <div className="container">
+            <FadeIn>
+              <div className="text-center max-w-4xl mx-auto mb-16">
+                <h2 className="h2 mb-6">{indexContent.sectors.title}</h2>
+                <p className="text-lg text-gray-600">
+                  {indexContent.sectors.subtitle}
+                </p>
+              </div>
+            </FadeIn>
+
+            <StaggerChildren>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {indexContent.sectors.items.map((sector, index) => (
+                  <StaggerItem key={index}>
+                    <div className="card card-hover h-full">
+                      <div className="text-4xl mb-6">{sector.icon}</div>
+                      <h3 className="h3 mb-4">{sector.title}</h3>
+                      <p className="text-gray-600 mb-6">{sector.description}</p>
+                      
+                      {/* Features */}
+                      <ul className="space-y-2 mb-8">
+                        {sector.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-gray-600">
+                            <span className="text-primary mt-1">✓</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <AnimatedButton 
+                        href={sector.link} 
+                        variant="outline"
+                        className="w-full"
+                      >
+                        {sector.buttonText}
+                      </AnimatedButton>
+                    </div>
+                  </StaggerItem>
+                ))}
+              </div>
+            </StaggerChildren>
+
+            {/* Sectors CTA */}
+            <div className="mt-16 text-center">
+              <FadeIn>
+                <div className="max-w-3xl mx-auto">
+                  <h3 className="h3 mb-6">{indexContent.sectors.cta.title}</h3>
+                  <p className="text-lg text-gray-600 mb-8">
+                    {indexContent.sectors.cta.text}
+                  </p>
+                  <AnimatedButton
+                    href={indexContent.sectors.cta.buttonLink}
+                    variant="primary"
+                  >
+                    {indexContent.sectors.cta.buttonText}
+                  </AnimatedButton>
+                </div>
+              </FadeIn>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Pricing Section */}
       {indexContent.pricing && (
         <section className="section bg-white">

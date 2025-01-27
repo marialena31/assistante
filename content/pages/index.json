@@ -49,6 +49,84 @@
       }
     ]
   },
+  "sectors": {
+    "title": "Des solutions adaptées à votre secteur d'activité",
+    "subtitle": "Que vous soyez dans le juridique, le BTP, l'immobilier, les technologies ou que vous dirigiez une TPE, je propose des services personnalisés pour vous accompagner efficacement.",
+    "items": [
+      {
+        "icon": "⚖️",
+        "title": "Juridique",
+        "description": "Une assistance rigoureuse pour vos dossiers juridiques.",
+        "link": "/secteurs#juridique",
+        "buttonText": "Découvrir",
+        "features": [
+          "Gestion des dossiers juridiques",
+          "Préparation de documents",
+          "Coordination avec les clients"
+        ]
+      },
+      {
+        "icon": "🏗️",
+        "title": "BTP",
+        "description": "Optimisez la gestion de vos chantiers avec un support administratif expert.",
+        "link": "/secteurs#btp",
+        "buttonText": "Découvrir",
+        "features": [
+          "Suivi des contrats fournisseurs",
+          "Gestion des plannings",
+          "Dossiers administratifs"
+        ]
+      },
+      {
+        "icon": "🏠",
+        "title": "Immobilier",
+        "description": "Un soutien efficace pour vos transactions et relations clients.",
+        "link": "/secteurs#immobilier",
+        "buttonText": "Découvrir",
+        "features": [
+          "Gestion des dossiers clients",
+          "Suivi des mandats",
+          "Organisation des visites"
+        ]
+      },
+      {
+        "icon": "💡",
+        "title": "Technologies et Startups",
+        "description": "Appuyez-vous sur un accompagnement agile pour vos projets innovants.",
+        "link": "/secteurs#tech",
+        "buttonText": "Découvrir",
+        "features": [
+          "Gestion de projets agiles",
+          "Suivi budgétaire",
+          "Coordination d'événements"
+        ]
+      },
+      {
+        "icon": "🏪",
+        "title": "TPE, Commerçants et Artisans",
+        "description": "Simplifiez votre gestion quotidienne avec des services adaptés à vos besoins.",
+        "link": "/secteurs#tpe",
+        "buttonText": "Découvrir",
+        "features": [
+          "Gestion administrative",
+          "Support comptable",
+          "Transition numérique"
+        ]
+      }
+    ],
+    "cta": {
+      "title": "Un accompagnement sur-mesure",
+      "text": "Quel que soit votre secteur, bénéficiez d'un accompagnement sur-mesure pour gagner en efficacité et en sérénité.",
+      "buttonText": "Découvrez toutes mes offres par secteur",
+      "buttonLink": "/secteurs"
+    }
+  },
+  "stats": [
+    { "number": 50, "suffix": "km", "label": "Rayon d'intervention" },
+    { "number": 30, "suffix": "+", "label": "Clients accompagnés" },
+    { "number": 20, "suffix": "+", "label": "Années d'Expérience" },
+    { "number": 24, "suffix": "h", "label": "Délai de Réponse" }
+  ],
   "pricing": {
     "title": "Des tarifs adaptés à vos besoins",
     "description": "Choisissez une formule flexible et transparente : prestations ponctuelles, forfaits mensuels ou abonnements sur-mesure. Bénéficiez d'un accompagnement personnalisé, adapté à vos attentes.",
@@ -75,12 +153,6 @@
       }
     ]
   },
-  "stats": [
-    { "number": 50, "suffix": "km", "label": "Rayon d'intervention" },
-    { "number": 30, "suffix": "+", "label": "Clients accompagnés" },
-    { "number": 20, "suffix": "+", "label": "Années d'Expérience" },
-    { "number": 24, "suffix": "h", "label": "Délai de Réponse" }
-  ],
   "callToAction": {
     "title": "Prête à vous accompagner dans vos projets",
     "description": "Contactez-moi pour discuter de vos besoins en assistance administrative",

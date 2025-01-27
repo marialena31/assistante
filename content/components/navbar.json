@@ -6,8 +6,9 @@
   "navigation": [
     { "name": "Accueil", "href": "/" },
     { "name": "Services", "href": "/services" },
-    { "name": "À propos", "href": "/about" },
+    { "name": "Secteurs", "href": "/secteurs" },
     { "name": "Tarifs", "href": "/tarifs" },
+    { "name": "FAQ", "href": "/faq" },
     { "name": "Contact", "href": "/contact" }
   ],
   "cta": {

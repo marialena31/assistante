@@ -66,6 +66,66 @@ export default function Tarifs() {
           </StaggerChildren>
         </div>
 
+        {/* Travel Expenses Section */}
+        <section className="section bg-gray-50">
+          <div className="container">
+            <FadeIn>
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                <h2 className="h2 mb-6">{tarifsContent.travelExpenses.title}</h2>
+                <p className="text-lg text-gray-600">
+                  {tarifsContent.travelExpenses.description}
+                </p>
+              </div>
+            </FadeIn>
+
+            <StaggerChildren>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                {tarifsContent.travelExpenses.categories.map((category, index) => (
+                  <StaggerItem key={index}>
+                    <div className="card h-full">
+                      <div className="flex items-start gap-4 mb-6">
+                        <div className="text-4xl">{category.icon}</div>
+                        <div>
+                          <h3 className="h3 mb-2">{category.title}</h3>
+                          <p className="text-gray-600">{category.description}</p>
+                        </div>
+                      </div>
+
+                      {category.details && (
+                        <ul className="space-y-3 mt-4">
+                          {category.details.map((detail, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-primary mt-1">•</span>
+                              <span className="text-gray-600">{detail}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </StaggerItem>
+                ))}
+              </div>
+            </StaggerChildren>
+
+            {/* Example Calculation Box */}
+            <FadeIn>
+              <div className="max-w-2xl mx-auto">
+                <div className="card bg-primary/5 border-2 border-primary/20">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="text-3xl">🧮</div>
+                    <h4 className="h4 text-primary">
+                      {tarifsContent.travelExpenses.example.title}
+                    </h4>
+                  </div>
+                  <p className="text-gray-700 text-lg">
+                    {tarifsContent.travelExpenses.example.description}
+                  </p>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
+        </section>
+
         {/* Custom Package Section */}
         <div className="bg-accent text-white py-16">
           <div className="container text-center">

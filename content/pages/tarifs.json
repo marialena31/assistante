@@ -52,6 +52,189 @@
       ]
     }
   ],
+  "sectorPackages": {
+    "title": "Forfaits par secteur d'activité",
+    "description": "Des solutions personnalisées adaptées aux besoins spécifiques de votre secteur",
+    "sectors": [
+      {
+        "id": "tpe",
+        "icon": "🏪",
+        "title": "TPE, Commerçants et Artisans",
+        "subtitle": "Solutions administratives pour les petites entreprises",
+        "description": "Simplifiez votre gestion quotidienne et concentrez-vous sur votre cœur de métier. Je vous accompagne dans la gestion administrative, comptable et numérique de votre entreprise.",
+        "services": [
+          "Rédaction et envoi de devis et factures",
+          "Suivi des paiements et relances des impayés",
+          "Gestion des courriers et des emails professionnels",
+          "Mise à jour des bases de données clients et fournisseurs",
+          "Préparation des documents pour le comptable",
+          "Suivi des dépenses et des recettes",
+          "Classement et archivage des pièces comptables",
+          "Élaboration des bulletins de paie et déclarations sociales",
+          "Rédaction des contrats de travail et formalités d'embauche",
+          "Mise en place de la facturation électronique",
+          "Formation à l'utilisation d'outils numériques adaptés",
+          "Gestion de la présence en ligne (site web, réseaux sociaux)"
+        ],
+        "packages": [
+          {
+            "name": "Pack Essentiel",
+            "price": "200€",
+            "hours": 5,
+            "description": "Gestion des devis et factures (jusqu'à 20/mois), suivi des paiements et relances, gestion des emails professionnels"
+          },
+          {
+            "name": "Pack Sérénité",
+            "price": "350€",
+            "hours": 10,
+            "description": "Pack Essentiel + préparation des documents comptables et gestion RH de base (paie, contrats)"
+          },
+          {
+            "name": "Pack Premium",
+            "price": "500€",
+            "hours": 15,
+            "description": "Pack Sérénité + support à la transition numérique et gestion complète de la présence en ligne"
+          }
+        ]
+      },
+      {
+        "id": "juridique",
+        "icon": "⚖️",
+        "title": "Secteur Juridique",
+        "subtitle": "Assistance dédiée aux professionnels du droit",
+        "description": "Les cabinets juridiques, notaires et avocats ont besoin d'une gestion administrative précise et rigoureuse. Je vous accompagne pour optimiser vos dossiers et alléger votre charge de travail.",
+        "services": [
+          "Gestion des dossiers juridiques (classement, suivi, mise à jour)",
+          "Préparation de documents juridiques et formalités administratives",
+          "Coordination avec les clients et les institutions juridiques",
+          "Prise de rendez-vous et gestion d'agenda",
+          "Veille réglementaire et juridique"
+        ],
+        "packages": [
+          {
+            "name": "Forfait Essentiel",
+            "price": "400€",
+            "hours": 10,
+            "description": "Gestion d'agenda et préparation de documents"
+          },
+          {
+            "name": "Forfait Confort",
+            "price": "750€",
+            "hours": 20,
+            "description": "Suivi des dossiers juridiques et coordination avec les clients"
+          },
+          {
+            "name": "Forfait Premium",
+            "price": "1050€",
+            "hours": 30,
+            "description": "Gestion complète des formalités administratives et suivi des dossiers complexes"
+          }
+        ]
+      },
+      {
+        "id": "btp",
+        "icon": "🏗️",
+        "title": "Secteur BTP",
+        "subtitle": "Un soutien administratif pour le secteur du BTP",
+        "description": "Entre la gestion des chantiers et les relations avec vos fournisseurs, il est essentiel de pouvoir compter sur une organisation administrative efficace. Je vous propose des solutions adaptées à vos défis.",
+        "services": [
+          "Suivi des contrats et des factures fournisseurs",
+          "Gestion des plannings de chantier et des équipes",
+          "Préparation et dépôt des dossiers administratifs (marchés publics, permis de construire)",
+          "Gestion des courriers et relances",
+          "Coordination des appels d'offres"
+        ],
+        "packages": [
+          {
+            "name": "Forfait Essentiel",
+            "price": "550€",
+            "hours": 15,
+            "description": "Gestion des factures et courriers administratifs"
+          },
+          {
+            "name": "Forfait Confort",
+            "price": "950€",
+            "hours": 25,
+            "description": "Suivi des plannings et gestion des appels d'offres"
+          },
+          {
+            "name": "Forfait Premium",
+            "price": "1500€",
+            "hours": 40,
+            "description": "Gestion complète des dossiers administratifs et coordination des chantiers"
+          }
+        ]
+      },
+      {
+        "id": "immobilier",
+        "icon": "🏠",
+        "title": "Secteur Immobilier",
+        "subtitle": "Votre partenaire administratif pour l'immobilier",
+        "description": "Les agences immobilières et promoteurs font face à de nombreux défis administratifs. Je vous aide à rester organisé et à optimiser vos processus.",
+        "services": [
+          "Gestion des dossiers clients (acquéreurs et vendeurs)",
+          "Rédaction et suivi des mandats et contrats",
+          "Organisation des visites et des plannings commerciaux",
+          "Suivi des paiements et des relances",
+          "Gestion des réseaux sociaux et campagnes marketing"
+        ],
+        "packages": [
+          {
+            "name": "Forfait Essentiel",
+            "price": "400€",
+            "hours": 10,
+            "description": "Gestion des plannings et rédaction des contrats"
+          },
+          {
+            "name": "Forfait Confort",
+            "price": "750€",
+            "hours": 20,
+            "description": "Suivi des dossiers clients et organisation des visites"
+          },
+          {
+            "name": "Forfait Premium",
+            "price": "1100€",
+            "hours": 30,
+            "description": "Gestion administrative complète et coordination marketing"
+          }
+        ]
+      },
+      {
+        "id": "tech",
+        "icon": "💡",
+        "title": "Secteur Technologie",
+        "subtitle": "Un appui opérationnel pour vos projets innovants",
+        "description": "Les startups et entreprises technologiques ont besoin de flexibilité et d'un soutien administratif agile pour se concentrer sur leur croissance.",
+        "services": [
+          "Gestion d'agendas et organisation des réunions",
+          "Assistance pour le suivi de projets (méthodes Agiles)",
+          "Préparation de présentations et rapports",
+          "Gestion des factures et suivi budgétaire",
+          "Coordination d'événements et de déplacements professionnels"
+        ],
+        "packages": [
+          {
+            "name": "Forfait Essentiel",
+            "price": "450€",
+            "hours": 10,
+            "description": "Gestion d'agendas et coordination de réunions"
+          },
+          {
+            "name": "Forfait Confort",
+            "price": "850€",
+            "hours": 20,
+            "description": "Suivi de projets et assistance administrative"
+          },
+          {
+            "name": "Forfait Premium",
+            "price": "1350€",
+            "hours": 35,
+            "description": "Gestion complète des opérations administratives et coordination d'événements"
+          }
+        ]
+      }
+    ]
+  },
   "subscriptions": [
     {
       "name": "Abonnement Standard",
@@ -95,22 +278,44 @@
       }
     ]
   },
-  "faq": {
-    "title": "Questions fréquentes",
-    "items": [
+  "travelExpenses": {
+    "title": "Modalités de déplacement",
+    "description": "Les frais de déplacement sont calculés en fonction de la distance et de la fréquence des interventions",
+    "categories": [
       {
-        "question": "Quels sont les moyens de paiement acceptés ?",
-        "answer": "Virement bancaire et carte bancaire"
+        "title": "Télétravail",
+        "icon": "💻",
+        "description": "Aucun frais de déplacement"
       },
       {
-        "question": "Proposez-vous des devis gratuits ?",
-        "answer": "Oui, contactez-moi pour discuter de vos besoins"
+        "title": "Déplacements locaux",
+        "icon": "🚗",
+        "description": "Rayon de 10 km autour de Colomiers : Offerts"
       },
       {
-        "question": "Est-il possible d'ajuster les forfaits en cours de collaboration ?",
-        "answer": "Tout à fait, je reste flexible pour m'adapter à vos demandes"
+        "title": "Déplacements intermédiaires",
+        "icon": "🛣️",
+        "description": "Rayon de 10 à 50 km",
+        "details": [
+          "Indemnités kilométriques selon barème en vigueur",
+          "Maximum 50 km pour une journée par semaine",
+          "Maximum 30 km pour deux journées par semaine"
+        ]
+      },
+      {
+        "title": "Déplacements exceptionnels",
+        "icon": "✈️",
+        "description": "Jusqu'à 200 km",
+        "details": [
+          "Limité à une fois par mois",
+          "Facturé pour une journée complète de prestation"
+        ]
       }
-    ]
+    ],
+    "example": {
+      "title": "Exemple de calcul",
+      "description": "Pour un déplacement de 35 km aller-retour, les frais kilométriques seront appliqués à 25 km (au-delà des 10 km offerts)"
+    }
   },
   "customPackage": {
     "title": "Un besoin spécifique ?",

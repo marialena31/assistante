@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +7,7 @@ import navbarContent from '../../content/components/navbar.json';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-soft">
@@ -23,7 +25,11 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="px-4 py-2 rounded-lg text-dark hover:text-primary hover:bg-gray-50 text-sm font-medium transition-all"
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  router.pathname === item.href
+                    ? 'text-primary bg-gray-50'
+                    : 'text-dark hover:text-primary hover:bg-gray-50'
+                }`}
               >
                 {item.name}
               </Link>
@@ -71,7 +77,11 @@ export default function Navbar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="block px-4 py-2 text-base font-medium text-dark hover:text-primary hover:bg-gray-50 rounded-lg transition-all"
+                  className={`block px-4 py-2 text-base font-medium rounded-lg transition-all ${
+                    router.pathname === item.href
+                      ? 'text-primary bg-gray-50'
+                      : 'text-dark hover:text-primary hover:bg-gray-50'
+                  }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
