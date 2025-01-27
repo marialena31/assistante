@@ -49,6 +49,32 @@
       }
     ]
   },
+  "pricing": {
+    "title": "Des tarifs adaptés à vos besoins",
+    "description": "Choisissez une formule flexible et transparente : prestations ponctuelles, forfaits mensuels ou abonnements sur-mesure. Bénéficiez d'un accompagnement personnalisé, adapté à vos attentes.",
+    "buttonText": "Consultez tous les détails",
+    "buttonLink": "/tarifs",
+    "highlights": [
+      {
+        "name": "Forfait Horaire",
+        "price": "40€",
+        "unit": "par heure",
+        "description": "Pour vos besoins ponctuels"
+      },
+      {
+        "name": "Forfait Essentiel",
+        "price": "350€",
+        "unit": "pour 10h/mois",
+        "description": "Pour vos besoins réguliers"
+      },
+      {
+        "name": "Abonnement Standard",
+        "price": "600€",
+        "unit": "par mois",
+        "description": "Pour une collaboration à long terme"
+      }
+    ]
+  },
   "stats": [
     { "number": 50, "suffix": "km", "label": "Rayon d'intervention" },
     { "number": 30, "suffix": "+", "label": "Clients accompagnés" },

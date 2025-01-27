@@ -1,49 +1,121 @@
 {
-  "title": "Mes Tarifs",
-  "subtitle": "Des formules adaptées à vos besoins",
+  "title": "Des solutions sur-mesure pour répondre à vos besoins",
+  "subtitle": "Découvrez une gamme de services adaptés à vos attentes : gestion administrative, assistance juridique, marketing digital, et bien plus. Que vous ayez besoin d'une aide ponctuelle ou d'une collaboration à long terme, nos tarifs s'ajustent pour répondre à vos besoins professionnels.",
   "packages": [
     {
       "name": "Forfait Horaire",
-      "price": "45€",
+      "price": "40€",
       "unit": "par heure",
-      "description": "Idéal pour des besoins ponctuels ou des missions courtes",
+      "description": "Pour vos besoins ponctuels",
       "features": [
-        "Facturation à l'heure",
-        "Sans engagement",
-        "Missions ponctuelles",
-        "Flexibilité maximale"
+        "Idéal pour des missions spécifiques",
+        "Tâches ponctuelles",
+        "Rédaction",
+        "Gestion d'emails"
       ]
     },
     {
-      "name": "Forfait Demi-journée",
-      "price": "160€",
-      "unit": "par demi-journée",
-      "description": "Pour les projets nécessitant plusieurs heures de travail consécutives",
+      "name": "Forfait Essentiel",
+      "price": "350€",
+      "unit": "pour 10h/mois",
+      "description": "Pour vos besoins réguliers",
       "features": [
-        "4 heures consécutives",
-        "Tarif avantageux",
-        "Organisation optimisée",
-        "Suivi de projet"
+        "Gestion des emails",
+        "Organisation d'agenda",
+        "Tâches administratives de base",
+        "35€/heure"
+      ]
+    },
+    {
+      "name": "Forfait Confort",
+      "price": "650€",
+      "unit": "pour 20h/mois",
+      "description": "Pour vos besoins réguliers",
+      "features": [
+        "Emails et agendas",
+        "Préparation de documents",
+        "Suivi de dossiers",
+        "32,50€/heure"
       ],
       "popular": true
     },
     {
-      "name": "Forfait Journée",
-      "price": "300€",
-      "unit": "par jour",
-      "description": "Solution économique pour les projets importants",
+      "name": "Forfait Premium",
+      "price": "900€",
+      "unit": "pour 30h/mois",
+      "description": "Pour vos besoins réguliers",
       "features": [
-        "8 heures de travail",
-        "Meilleur rapport qualité/prix",
-        "Gestion de projet complète",
-        "Reporting détaillé"
+        "Gestion administrative complète",
+        "Support commercial et marketing",
+        "Coordination de projets",
+        "30€/heure"
       ]
     }
   ],
+  "subscriptions": [
+    {
+      "name": "Abonnement Standard",
+      "price": "600€",
+      "unit": "par mois",
+      "description": "Pour une collaboration à long terme",
+      "features": [
+        "20 heures de prestation mensuelle",
+        "Priorisation des demandes urgentes",
+        "Suivi régulier",
+        "Accompagnement personnalisé"
+      ]
+    },
+    {
+      "name": "Abonnement Premium",
+      "price": "1100€",
+      "unit": "par mois",
+      "description": "Pour une collaboration à long terme",
+      "features": [
+        "40 heures de prestation mensuelle",
+        "Suivi VIP",
+        "Accompagnement personnalisé",
+        "Accès prioritaire"
+      ]
+    }
+  ],
+  "additionalServices": {
+    "title": "Services Complémentaires",
+    "items": [
+      {
+        "name": "Gestion des urgences",
+        "description": "Délai de moins de 24h : +20% sur le tarif horaire"
+      },
+      {
+        "name": "Intervention week-ends et jours fériés",
+        "description": "+50% sur le tarif horaire"
+      },
+      {
+        "name": "Formation ou accompagnement spécifique",
+        "description": "Sur devis"
+      }
+    ]
+  },
+  "faq": {
+    "title": "Questions fréquentes",
+    "items": [
+      {
+        "question": "Quels sont les moyens de paiement acceptés ?",
+        "answer": "Virement bancaire et carte bancaire"
+      },
+      {
+        "question": "Proposez-vous des devis gratuits ?",
+        "answer": "Oui, contactez-moi pour discuter de vos besoins"
+      },
+      {
+        "question": "Est-il possible d'ajuster les forfaits en cours de collaboration ?",
+        "answer": "Tout à fait, je reste flexible pour m'adapter à vos demandes"
+      }
+    ]
+  },
   "customPackage": {
-    "title": "Forfait Sur Mesure",
-    "description": "Vous avez un projet spécifique ?",
-    "subtitle": "Contactez-moi pour discuter de vos besoins et obtenir un devis personnalisé",
+    "title": "Un besoin spécifique ?",
+    "description": "Vous avez un projet particulier ?",
+    "subtitle": "Contactez-moi pour un devis personnalisé",
     "buttonText": "Me contacter"
   }
 }

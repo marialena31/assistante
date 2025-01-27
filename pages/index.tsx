@@ -100,7 +100,8 @@ export default function Home() {
               <FadeIn key={index} delay={index * 0.1}>
                 <div className="text-center">
                   <div className="text-3xl md:text-4xl font-bold mb-2">
-                    <Counter end={stat.number} suffix={stat.suffix} duration={2} />
+                    <Counter end={stat.number} duration={2} />
+                    {stat.suffix}
                   </div>
                   <div className="text-white/90 text-sm md:text-base">{stat.label}</div>
                 </div>
@@ -110,27 +111,52 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      {indexContent.pricing && (
+        <section className="section bg-white">
+          <div className="container">
+            <FadeIn>
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                <h2 className="h2 mb-6">{indexContent.pricing.title}</h2>
+                <p className="text-lg text-gray-600">{indexContent.pricing.description}</p>
+              </div>
+            </FadeIn>
+
+            <StaggerChildren>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {indexContent.pricing.highlights.map((plan, index) => (
+                  <StaggerItem key={index}>
+                    <div className="card card-hover h-full text-center p-8">
+                      <h3 className="h3 mb-4">{plan.name}</h3>
+                      <div className="text-3xl font-bold text-primary mb-2">{plan.price}</div>
+                      <div className="text-gray-600 mb-6">{plan.unit}</div>
+                      <p className="text-gray-600 mb-8">{plan.description}</p>
+                      <AnimatedButton href="/tarifs" variant="outline" className="w-full">
+                        {indexContent.pricing.buttonText}
+                      </AnimatedButton>
+                    </div>
+                  </StaggerItem>
+                ))}
+              </div>
+            </StaggerChildren>
+          </div>
+        </section>
+      )}
+
       {/* Call to Action */}
       <section className="section-sm bg-accent text-white">
         <div className="container">
-          <FadeIn>
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="h2 mb-6">
-                {indexContent.callToAction.title}
-              </h2>
-              <p className="text-lg md:text-xl mb-8 text-white/90">
-                {indexContent.callToAction.description}
-              </p>
-              <motion.a
-                href={indexContent.callToAction.buttonLink}
-                className="inline-block bg-white text-accent hover:bg-gray-100 px-8 py-4 rounded-xl font-medium text-lg transition-all shadow-soft hover:shadow-strong"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {indexContent.callToAction.buttonText}
-              </motion.a>
-            </div>
-          </FadeIn>
+          <div className="text-center">
+            <h2 className="h2 mb-6 text-white">
+              {indexContent.callToAction.title}
+            </h2>
+            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+              {indexContent.callToAction.description}
+            </p>
+            <AnimatedButton href={indexContent.callToAction.buttonLink} variant="white">
+              {indexContent.callToAction.buttonText}
+            </AnimatedButton>
+          </div>
         </div>
       </section>
     </Layout>

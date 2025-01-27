@@ -2,6 +2,23 @@ import Layout from '../components/layout/Layout';
 import FadeIn from '../components/animations/FadeIn';
 import politiqueContent from '../content/pages/politique-confidentialite.json';
 
+type ItemType = string | { label: string; value: string; } | { title: string; description: string; };
+
+interface Section {
+  title: string;
+  content?: string;
+  items?: ItemType[];
+  subsections?: {
+    title: string;
+    items?: string[];
+  }[];
+  note?: string;
+  contact?: string | {
+    email: string;
+    phone: string;
+  };
+}
+
 export default function PolitiqueConfidentialite() {
   return (
     <Layout
@@ -19,32 +36,26 @@ export default function PolitiqueConfidentialite() {
                 {politiqueContent.introduction}
               </p>
 
-              {politiqueContent.sections.map((section, index) => (
+              {politiqueContent.sections.map((section: Section, index) => (
                 <section key={index} className="mb-12">
                   <h2 className="text-2xl font-bold text-dark mb-6">{section.title}</h2>
                   {section.content && <p>{section.content}</p>}
 
-                  {section.items && !section.items[0]?.title && (
+                  {section.items && section.items.length > 0 && (
                     <ul className={section.content ? "list-disc pl-6" : "list-none space-y-2"}>
                       {section.items.map((item, idx) => (
                         <li key={idx}>
                           {typeof item === 'string' ? (
                             item
-                          ) : (
+                          ) : 'label' in item ? (
                             <>
                               <strong>{item.label}:</strong> {item.value}
                             </>
+                          ) : (
+                            <>
+                              <strong>{item.title}:</strong> {item.description}
+                            </>
                           )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {section.items && section.items[0]?.title && (
-                    <ul className="list-disc pl-6">
-                      {section.items.map((item, idx) => (
-                        <li key={idx}>
-                          <strong>{item.title}:</strong> {item.description}
                         </li>
                       ))}
                     </ul>
