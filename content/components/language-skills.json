@@ -1,0 +1,19 @@
+{
+  "languages": [
+    {
+      "name": "Français",
+      "level": "Natif",
+      "percentage": 100
+    },
+    {
+      "name": "Anglais",
+      "level": "B2",
+      "percentage": 80
+    },
+    {
+      "name": "Espagnol",
+      "level": "B1",
+      "percentage": 60
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "hero": {
+    "title": "Votre assistante freelance polyvalente.",
+    "description": "Forte d'une expérience diversifiée dans l'assistanat, la gestion de projets et le commerce, je mets mon expertise à votre service pour vous faire gagner du temps et de l'efficacité.",
+    "buttons": {
+      "primary": {
+        "text": "Découvrez mes services",
+        "link": "/services"
+      },
+      "secondary": {
+        "text": "Contactez-moi dès aujourd'hui pour un devis gratuit.",
+        "link": "/contact"
+      }
+    }
+  },
+  "services": {
+    "title": "Mes Services",
+    "subtitle": "Des solutions adaptées à vos besoins pour optimiser votre gestion administrative",
+    "items": [
+      {
+        "icon": "📋",
+        "title": "Gestion Administrative",
+        "description": "Gestion du courrier, des emails, classement et archivage des documents."
+      },
+      {
+        "icon": "💼",
+        "title": "Support Organisationnel",
+        "description": "Organisation de réunions, gestion d'agenda, planification d'événements."
+      },
+      {
+        "icon": "📊",
+        "title": "Assistance Comptable",
+        "description": "Suivi des factures, notes de frais, et préparation des documents comptables."
+      },
+      {
+        "icon": "👥",
+        "title": "Assistance RH",
+        "description": "Gestion des arrivées/départs, rédaction d'annonces et coordination des formations."
+      },
+      {
+        "icon": "🎯",
+        "title": "Assistance Commerciale",
+        "description": "Élaboration de devis, gestion des commandes et création de catalogues."
+      },
+      {
+        "icon": "⚖️",
+        "title": "Assistance Juridique",
+        "description": "Préparation des documents juridiques et veille réglementaire RGPD."
+      }
+    ]
+  },
+  "stats": [
+    { "number": 50, "suffix": "km", "label": "Rayon d'intervention" },
+    { "number": 30, "suffix": "+", "label": "Clients accompagnés" },
+    { "number": 20, "suffix": "+", "label": "Années d'Expérience" },
+    { "number": 24, "suffix": "h", "label": "Délai de Réponse" }
+  ],
+  "callToAction": {
+    "title": "Prête à vous accompagner dans vos projets",
+    "description": "Contactez-moi pour discuter de vos besoins en assistance administrative",
+    "buttonText": "Me contacter",
+    "buttonLink": "/contact"
+  }
+}

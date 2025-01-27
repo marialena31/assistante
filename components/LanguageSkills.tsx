@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import languageContent from '../content/components/language-skills.json';
 
 interface Language {
   name: string;
@@ -6,28 +7,10 @@ interface Language {
   percentage: number;
 }
 
-const languages: Language[] = [
-  {
-    name: 'Français',
-    level: 'Natif',
-    percentage: 100,
-  },
-  {
-    name: 'Anglais',
-    level: 'B2',
-    percentage: 80,
-  },
-  {
-    name: 'Espagnol',
-    level: 'B1',
-    percentage: 60,
-  },
-];
-
 export default function LanguageSkills() {
   return (
     <div className="space-y-4">
-      {languages.map((language, index) => (
+      {languageContent.languages.map((language, index) => (
         <div key={index} className="space-y-2">
           <div className="flex justify-between items-center">
             <span className="font-medium text-gray-700">{language.name}</span>

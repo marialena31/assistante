@@ -1,0 +1,60 @@
+{
+  "stats": [
+    { "number": 20, "suffix": "+", "label": "Années d'expérience" },
+    { "number": 30, "suffix": "+", "label": "Clients satisfaits" },
+    { "number": 50, "suffix": "+", "label": "Projets réalisés" },
+    { "number": 100, "suffix": "%", "label": "Engagement" }
+  ],
+  "services": [
+    {
+      "category": "A. Gestion Administrative et Organisation",
+      "items": [
+        "Organisation des dossiers et suivi des plannings.",
+        "Contrôle documentaire, archivage, et rédaction de courriers.",
+        "Assistance à la préparation de dossiers (marchés publics, audits)."
+      ]
+    },
+    {
+      "category": "B. Assistance RH",
+      "items": [
+        "Gestion des arrivées/départs : matériel et logiciel.",
+        "Rédaction d'annonces et tri des candidatures.",
+        "Coordination des formations et suivi administratif des équipes."
+      ]
+    },
+    {
+      "category": "C. Contrôle de Gestion et finance",
+      "items": [
+        "Préparation des dossiers pour le cabinet comptable, suivi des factures/paiements.",
+        "Gestion de trésorerie et analyse des coûts.",
+        "Création de tableaux de bord et reporting à la direction."
+      ]
+    },
+    {
+      "category": "D. Assistance Commerciale et Marketing",
+      "items": [
+        "Élaboration de devis, gestion des commandes, et facturation.",
+        "Création et gestion de catalogues papier et e-commerce.",
+        "Organisation de campagnes marketing et gestion des réseaux sociaux."
+      ]
+    },
+    {
+      "category": "E. Assistance Juridique",
+      "items": [
+        "Préparation des documents juridiques et suivi des procédures judiciaires.",
+        "Coordination avec les avocats, notaires et huissiers.",
+        "Veille réglementaire et conformité RGPD."
+      ]
+    },
+    {
+      "category": "F. Gestion de Projets et Cybersécurité",
+      "items": [
+        "Utilisation des méthodologies Agile pour le suivi des projets.",
+        "Surveillance des pratiques de sécurité et analyse des risques (formation cybersécurité).",
+        "Gestion et maintenance de sites web (WordPress, Magento)."
+      ]
+    }
+  ],
+  "title": "Mes Services",
+  "subtitle": "Des solutions adaptées à vos besoins pour optimiser votre gestion administrative"
+}

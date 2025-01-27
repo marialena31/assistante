@@ -1,0 +1,9 @@
+{
+  "title": "404",
+  "heading": "Page non trouvée",
+  "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+  "button": {
+    "text": "Retour à l'accueil",
+    "link": "/"
+  }
+}

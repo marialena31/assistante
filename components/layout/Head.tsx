@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import headContent from '../../content/components/head.json';
 
 interface HeadProps {
   title?: string;
@@ -8,10 +9,10 @@ interface HeadProps {
 }
 
 export default function CustomHead({
-  title = 'Maria-Lena Pietri | Assistante Administrative Freelance',
-  description = 'Simplifiez votre quotidien administratif avec une assistante freelance polyvalente. Services de gestion administrative, comptabilité, relation client et plus.',
-  keywords = 'assistante administrative, freelance, gestion administrative, comptabilité, relation client, organisation, assistance virtuelle',
-  ogImage = '/images/og-image.jpg'
+  title = headContent.defaults.title,
+  description = headContent.defaults.description,
+  keywords = headContent.defaults.keywords,
+  ogImage = headContent.defaults.ogImage
 }: HeadProps) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://marialena-pietri.fr';
 
@@ -22,7 +23,7 @@ export default function CustomHead({
       <meta name="keywords" content={keywords} />
       
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" href={headContent.meta.favicon} />
       
       {/* Open Graph */}
       <meta property="og:url" content={siteUrl} />
@@ -38,11 +39,11 @@ export default function CustomHead({
       <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
       
       {/* Viewport */}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="viewport" content={headContent.meta.viewport} />
       
       {/* Other */}
-      <meta name="robots" content="index, follow" />
-      <meta name="google" content="notranslate" />
+      <meta name="robots" content={headContent.meta.robots} />
+      <meta name="google" content={headContent.meta.google} />
       <link rel="canonical" href={siteUrl} />
     </Head>
   );

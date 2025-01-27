@@ -2,14 +2,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const navigation = [
-  { name: 'Accueil', href: '/' },
-  { name: 'Services', href: '/services' },
-  { name: 'À propos', href: '/about' },
-  { name: 'Tarifs', href: '/tarifs' },
-  { name: 'Contact', href: '/contact' },
-];
+import navbarContent from '../../content/components/navbar.json';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,15 +11,15 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-soft">
       <div className="container">
         <div className="flex justify-between items-center h-20">
-          <Link href="/" className="flex items-center">
+          <Link href={navbarContent.brand.href} className="flex items-center">
             <span className="text-2xl font-bold text-gradient">
-              Maria-Lena Pietri
+              {navbarContent.brand.text}
             </span>
           </Link>
           
           {/* Desktop menu */}
           <div className="hidden md:flex md:items-center md:space-x-2">
-            {navigation.map((item) => (
+            {navbarContent.navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -36,10 +29,10 @@ export default function Navbar() {
               </Link>
             ))}
             <Link
-              href="/contact"
+              href={navbarContent.cta.href}
               className="ml-4 bg-accent hover:bg-accent/90 text-white px-6 py-2 rounded-lg text-sm font-medium transition-all shadow-soft hover:shadow-strong"
             >
-              Demander un devis
+              {navbarContent.cta.text}
             </Link>
           </div>
 
@@ -50,7 +43,9 @@ export default function Navbar() {
               className="text-dark hover:text-primary p-2 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">
+                {mobileMenuOpen ? navbarContent.mobileMenu.closeLabel : navbarContent.mobileMenu.openLabel}
+              </span>
               {mobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" />
               ) : (
@@ -72,7 +67,7 @@ export default function Navbar() {
             transition={{ duration: 0.2 }}
           >
             <div className="container py-4 space-y-1">
-              {navigation.map((item) => (
+              {navbarContent.navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
@@ -83,11 +78,11 @@ export default function Navbar() {
                 </Link>
               ))}
               <Link
-                href="/contact"
+                href={navbarContent.cta.href}
                 className="block mt-4 px-4 py-2 text-base font-medium text-white bg-accent hover:bg-accent/90 rounded-lg transition-all shadow-soft hover:shadow-strong"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Demander un devis
+                {navbarContent.cta.text}
               </Link>
             </div>
           </motion.div>

@@ -6,6 +6,7 @@ import FadeIn from '../components/animations/FadeIn';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import emailjs from '@emailjs/browser';
 import DOMPurify from 'dompurify';
+import contactContent from '../content/pages/contact.json';
 
 interface FormData {
   firstName: string;
@@ -27,62 +28,35 @@ const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>();
 
   useEffect(() => {
-    if (!EMAILJS_PUBLIC_KEY) {
-      console.error('EmailJS public key is not defined');
-      return;
-    }
     emailjs.init(EMAILJS_PUBLIC_KEY);
   }, []);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors }
-  } = useForm<FormData>({
-    mode: 'onBlur'
-  });
-
   const onSubmit = async (data: FormData) => {
-    if (!EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID || !EMAILJS_PUBLIC_KEY) {
-      console.error('EmailJS configuration is incomplete');
-      setSubmitStatus('error');
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitStatus(null);
 
-    const sanitizedData = {
-      firstName: DOMPurify.sanitize(data.firstName),
-      lastName: DOMPurify.sanitize(data.lastName),
-      email: DOMPurify.sanitize(data.email),
-      phone: DOMPurify.sanitize(data.phone),
-      message: DOMPurify.sanitize(data.message),
-    };
-
     try {
-      const templateParams = {
-        user_name: `${sanitizedData.firstName} ${sanitizedData.lastName}`,
-        user_email: sanitizedData.email,
-        user_phone: sanitizedData.phone,
-        message: sanitizedData.message
+      const sanitizedData = {
+        firstName: DOMPurify.sanitize(data.firstName),
+        lastName: DOMPurify.sanitize(data.lastName),
+        email: DOMPurify.sanitize(data.email),
+        phone: DOMPurify.sanitize(data.phone),
+        message: DOMPurify.sanitize(data.message),
       };
 
-      const response = await emailjs.send(
+      await emailjs.send(
         EMAILJS_SERVICE_ID,
         EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
+        sanitizedData
       );
 
-      console.log('Email sent successfully:', response);
       setSubmitStatus('success');
       reset();
     } catch (error) {
-      console.error('Email error:', error);
+      console.error('Error sending email:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
@@ -90,185 +64,193 @@ export default function Contact() {
   };
 
   return (
-    <Layout
-      title="Contact | Maria-Lena Pietri"
-      description="Contactez-moi pour discuter de vos besoins en assistance administrative"
-    >
-      <section className="bg-gradient-to-b from-white to-gray-50/50">
-        <div className="container py-16 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Contact Information */}
-            <FadeIn direction="right">
-              <div className="space-y-8">
-                <div>
-                  <h1 className="h1 text-gradient mb-6">Contact</h1>
-                  <p className="text-lg text-gray-600">
-                    Parlons de vos besoins en assistance administrative
-                  </p>
-                </div>
+    <Layout>
+      <div className="bg-gradient-to-b from-white to-gray-50/50">
+        <div className="container py-16">
+          <div className="max-w-4xl mx-auto">
+            <FadeIn>
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-bold mb-4">{contactContent.title}</h1>
+                <p className="text-xl text-gray-600">{contactContent.subtitle}</p>
+              </div>
 
-                <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+                <div className="space-y-8">
                   <motion.div
-                    whileHover={{ x: 5 }}
-                    className="flex items-start space-x-4"
+                    className="flex items-center space-x-4"
+                    whileHover={{ scale: 1.02 }}
                   >
                     <div className="text-2xl text-primary">✉️</div>
                     <div>
-                      <h3 className="font-medium text-dark">Email</h3>
-                      <p className="text-gray-600">contact@marialena-pietri.fr</p>
+                      <h3 className="font-medium text-dark">
+                        {contactContent.contactInfo.email.title}
+                      </h3>
+                      <a
+                        href={`mailto:${contactContent.contactInfo.email.value}`}
+                        className="text-gray-600 hover:text-primary"
+                      >
+                        {contactContent.contactInfo.email.value}
+                      </a>
                     </div>
                   </motion.div>
 
                   <motion.div
-                    whileHover={{ x: 5 }}
-                    className="flex items-start space-x-4"
+                    className="flex items-center space-x-4"
+                    whileHover={{ scale: 1.02 }}
                   >
                     <div className="text-2xl text-primary">📱</div>
                     <div>
-                      <h3 className="font-medium text-dark">Téléphone</h3>
-                      <p className="text-gray-600">+33 7 61 81 11 01</p>
+                      <h3 className="font-medium text-dark">
+                        {contactContent.contactInfo.phone.title}
+                      </h3>
+                      <a
+                        href={`tel:${contactContent.contactInfo.phone.value}`}
+                        className="text-gray-600 hover:text-primary"
+                      >
+                        {contactContent.contactInfo.phone.value}
+                      </a>
                     </div>
                   </motion.div>
 
                   <motion.div
-                    whileHover={{ x: 5 }}
-                    className="flex items-start space-x-4"
+                    className="flex items-center space-x-4"
+                    whileHover={{ scale: 1.02 }}
                   >
                     <div className="text-2xl text-primary">🕒</div>
                     <div>
-                      <h3 className="font-medium text-dark">Horaires</h3>
-                      <p className="text-gray-600">
-                        Du lundi au vendredi<br />
-                        9h00 - 18h00
+                      <h3 className="font-medium text-dark">
+                        {contactContent.contactInfo.hours.title}
+                      </h3>
+                      <p className="text-gray-600 whitespace-pre-line">
+                        {contactContent.contactInfo.hours.value}
                       </p>
                     </div>
                   </motion.div>
 
                   <motion.div
-                    whileHover={{ x: 5 }}
-                    className="flex items-start space-x-4"
+                    className="flex items-center space-x-4"
+                    whileHover={{ scale: 1.02 }}
                   >
                     <div className="text-2xl text-primary">⚡</div>
                     <div>
-                      <h3 className="font-medium text-dark">Réponse</h3>
+                      <h3 className="font-medium text-dark">
+                        {contactContent.contactInfo.response.title}
+                      </h3>
                       <p className="text-gray-600">
-                        Je vous réponds sous 24h maximum
+                        {contactContent.contactInfo.response.value}
                       </p>
                     </div>
                   </motion.div>
                 </div>
-              </div>
-            </FadeIn>
 
-            {/* Contact Form */}
-            <FadeIn direction="left">
-              <div className="bg-white rounded-xl shadow-strong p-6 lg:p-8">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate={true}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white rounded-lg p-6 shadow-md">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="firstName" className={labelClasses}>
+                          {contactContent.form.fields.firstName.label}
+                        </label>
+                        <input
+                          type="text"
+                          id="firstName"
+                          className={inputClasses}
+                          placeholder={contactContent.form.fields.firstName.placeholder}
+                          {...register('firstName', { required: contactContent.form.fields.firstName.required })}
+                        />
+                        {errors.firstName && (
+                          <p className={errorClasses}>{contactContent.form.fields.firstName.required}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="lastName" className={labelClasses}>
+                          {contactContent.form.fields.lastName.label}
+                        </label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          className={inputClasses}
+                          placeholder={contactContent.form.fields.lastName.placeholder}
+                          {...register('lastName', { required: contactContent.form.fields.lastName.required })}
+                        />
+                        {errors.lastName && (
+                          <p className={errorClasses}>{contactContent.form.fields.lastName.required}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="email" className={labelClasses}>
+                          {contactContent.form.fields.email.label}
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          className={inputClasses}
+                          placeholder={contactContent.form.fields.email.placeholder}
+                          {...register('email', {
+                            required: contactContent.form.fields.email.required,
+                            pattern: {
+                              value: new RegExp(contactContent.form.fields.email.pattern.value, 'i'),
+                              message: contactContent.form.fields.email.pattern.message
+                            }
+                          })}
+                        />
+                        {errors.email && (
+                          <p className={errorClasses}>
+                            {errors.email.type === 'pattern'
+                              ? contactContent.form.fields.email.pattern.message
+                              : contactContent.form.fields.email.required}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="phone" className={labelClasses}>
+                          {contactContent.form.fields.phone.label}
+                        </label>
+                        <input
+                          type="tel"
+                          id="phone"
+                          className={inputClasses}
+                          placeholder={contactContent.form.fields.phone.placeholder}
+                          {...register('phone', { required: contactContent.form.fields.phone.required })}
+                        />
+                        {errors.phone && (
+                          <p className={errorClasses}>{contactContent.form.fields.phone.required}</p>
+                        )}
+                      </div>
+                    </div>
+
                     <div>
-                      <label htmlFor="firstName" className={labelClasses}>
-                        Prénom*
+                      <label htmlFor="message" className={labelClasses}>
+                        {contactContent.form.fields.message.label}
                       </label>
-                      <input
-                        type="text"
-                        name="user_name"
-                        id="firstName"
-                        {...register("firstName", { required: "Le prénom est requis" })}
+                      <textarea
+                        id="message"
+                        rows={4}
                         className={inputClasses}
+                        placeholder={contactContent.form.fields.message.placeholder}
+                        {...register('message', { required: contactContent.form.fields.message.required })}
                       />
-                      {errors.firstName && (
-                        <span className={errorClasses}>{errors.firstName.message}</span>
+                      {errors.message && (
+                        <p className={errorClasses}>{contactContent.form.fields.message.required}</p>
                       )}
                     </div>
-                    <div>
-                      <label htmlFor="lastName" className={labelClasses}>
-                        Nom*
-                      </label>
-                      <input
-                        type="text"
-                        name="user_lastname"
-                        id="lastName"
-                        {...register("lastName", { required: "Le nom est requis" })}
-                        className={inputClasses}
-                      />
-                      {errors.lastName && (
-                        <span className={errorClasses}>{errors.lastName.message}</span>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label htmlFor="email" className={labelClasses}>
-                        Email*
-                      </label>
-                      <input
-                        type="email"
-                        name="user_email"
-                        id="email"
-                        {...register("email", {
-                          required: "L'email est requis",
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: "Adresse email invalide"
-                          }
-                        })}
-                        className={inputClasses}
-                      />
-                      {errors.email && (
-                        <span className={errorClasses}>{errors.email.message}</span>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className={labelClasses}>
-                        Téléphone*
-                      </label>
-                      <input
-                        type="tel"
-                        name="user_phone"
-                        id="phone"
-                        {...register("phone", {
-                          required: "Le numéro de téléphone est requis",
-                          pattern: {
-                            value: /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/,
-                            message: "Numéro de téléphone invalide"
-                          }
-                        })}
-                        className={inputClasses}
-                      />
-                      {errors.phone && (
-                        <span className={errorClasses}>{errors.phone.message}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className={labelClasses}>
-                      Message*
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      {...register("message", { required: "Le message est requis" })}
-                      rows={4}
-                      className={inputClasses}
-                    />
-                    {errors.message && (
-                      <span className={errorClasses}>{errors.message.message}</span>
-                    )}
-                  </div>
-
-                  <div className="mt-6">
                     {submitStatus === 'success' && (
-                      <div className="mb-4 p-4 bg-green-50 text-green-700 rounded-lg">
-                        Message envoyé avec succès ! Je vous répondrai dans les plus brefs délais.
+                      <div className="p-4 bg-green-50 text-green-700 rounded-lg">
+                        {contactContent.form.messages.success}
                       </div>
                     )}
+
                     {submitStatus === 'error' && (
-                      <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-lg">
-                        Une erreur est survenue. Veuillez réessayer ou me contacter directement par email.
+                      <div className="p-4 bg-red-50 text-red-700 rounded-lg">
+                        {contactContent.form.messages.error}
                       </div>
                     )}
+
                     <button
                       type="submit"
                       disabled={isSubmitting}
@@ -277,19 +259,19 @@ export default function Contact() {
                       {isSubmitting ? (
                         <span className="flex items-center justify-center">
                           <LoadingSpinner className="w-5 h-5 mr-2" />
-                          Envoi en cours...
+                          {contactContent.form.submitButton}
                         </span>
                       ) : (
-                        "Envoyer"
+                        contactContent.form.submitButton
                       )}
                     </button>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             </FadeIn>
           </div>
         </div>
-      </section>
+      </div>
     </Layout>
   );
 }

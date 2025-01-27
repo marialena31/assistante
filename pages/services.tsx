@@ -3,80 +3,19 @@ import FadeIn from '../components/animations/FadeIn';
 import StaggerChildren, { StaggerItem } from '../components/animations/StaggerChildren';
 import { motion } from 'framer-motion';
 import Counter from '../components/animations/Counter';
-
-
-const stats = [
-  { number: 20, suffix: '+', label: "Années d'expérience" },
-  { number: 30, suffix: '+', label: 'Clients satisfaits' },
-  { number: 50, suffix: '+', label: 'Projets réalisés' },
-  { number: 100, suffix: '%', label: 'Engagement' },
-];
-
-const services = [
-  {
-    category: 'A. Gestion Administrative et Organisation',
-    items: [
-      'Organisation des dossiers et suivi des plannings.',
-      'Contrôle documentaire, archivage, et rédaction de courriers.',
-      'Assistance à la préparation de dossiers (marchés publics, audits).'
-    ]
-  },
-  {
-    category: 'B. Assistance RH',
-    items: [
-      'Gestion des arrivées/départs : matériel et logiciel.',
-      'Rédaction d’annonces et tri des candidatures.',
-      'Coordination des formations et suivi administratif des équipes.'
-    ]
-  },
-  {
-    category: 'C. Contrôle de Gestion et finance',
-    items: [
-      'Préparation des dossiers pour le cabinet comptable, suivi des factures/paiements.',
-      'Gestion de trésorerie et analyse des coûts.',
-      'Création de tableaux de bord et reporting à la direction.'
-    ]
-  },
-  {
-    category: 'D. Assistance Commerciale et Marketing',
-    items: [
-      'Élaboration de devis, gestion des commandes, et facturation.',
-      'Création et gestion de catalogues papier et e-commerce.',
-      'Organisation de campagnes marketing et gestion des réseaux sociaux.'
-    ]
-  },
-  {
-    category: 'E. Assistance Juridique',
-    items: [
-      'Préparation des documents juridiques et suivi des procédures judiciaires.',
-      'Coordination avec les avocats, notaires et huissiers.',
-      'Veille réglementaire et conformité RGPD.'
-    ]
-  },
-  {
-    category: 'F. Gestion de Projets et Cybersécurité',
-    items: [
-      'Utilisation des méthodologies Agile pour le suivi des projets.',
-      'Surveillance des pratiques de sécurité et analyse des risques (formation cybersécurité).',
-      'Gestion et maintenance de sites web (WordPress, Magento).'
-    ]
-  }
-];
+import servicesContent from '../content/pages/services.json';
 
 export default function Services() {
   return (
-    <Layout
-      title="Services | Maria-Lena Pietri"
-      description="Découvrez mes services d'assistance administrative et de gestion pour optimiser votre organisation"
-    >
+    <Layout>
       <div className="bg-gray-50 min-h-screen">
         {/* Header */}
         <div className="bg-primary text-white py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <FadeIn>
-              <h1 className="text-4xl font-bold mb-6">Mes Services</h1>
+              <h1 className="text-4xl font-bold mb-6">{servicesContent.title}</h1>
               <p className="text-xl text-white/90">
-                Des solutions adaptées à vos besoins pour optimiser votre gestion administrative
+                {servicesContent.subtitle}
               </p>
             </FadeIn>
           </div>
@@ -86,15 +25,16 @@ export default function Services() {
         <div className="bg-white py-12 border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
+              {servicesContent.stats.map((stat, index) => (
                 <FadeIn key={index} delay={index * 0.1}>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary mb-2">
                       <Counter
-                        end={stat.number}
-                        suffix={stat.suffix}
+                        from={0}
+                        to={stat.number}
                         duration={2}
                       />
+                      {stat.suffix}
                     </div>
                     <div className="text-gray-600">{stat.label}</div>
                   </div>
@@ -108,7 +48,7 @@ export default function Services() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <StaggerChildren>
             <div className="grid gap-8">
-              {services.map((service, index) => (
+              {servicesContent.services.map((service, index) => (
                 <StaggerItem
                   key={index}
                   variants={{

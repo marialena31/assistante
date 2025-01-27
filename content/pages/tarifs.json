@@ -1,0 +1,49 @@
+{
+  "title": "Mes Tarifs",
+  "subtitle": "Des formules adaptées à vos besoins",
+  "packages": [
+    {
+      "name": "Forfait Horaire",
+      "price": "45€",
+      "unit": "par heure",
+      "description": "Idéal pour des besoins ponctuels ou des missions courtes",
+      "features": [
+        "Facturation à l'heure",
+        "Sans engagement",
+        "Missions ponctuelles",
+        "Flexibilité maximale"
+      ]
+    },
+    {
+      "name": "Forfait Demi-journée",
+      "price": "160€",
+      "unit": "par demi-journée",
+      "description": "Pour les projets nécessitant plusieurs heures de travail consécutives",
+      "features": [
+        "4 heures consécutives",
+        "Tarif avantageux",
+        "Organisation optimisée",
+        "Suivi de projet"
+      ],
+      "popular": true
+    },
+    {
+      "name": "Forfait Journée",
+      "price": "300€",
+      "unit": "par jour",
+      "description": "Solution économique pour les projets importants",
+      "features": [
+        "8 heures de travail",
+        "Meilleur rapport qualité/prix",
+        "Gestion de projet complète",
+        "Reporting détaillé"
+      ]
+    }
+  ],
+  "customPackage": {
+    "title": "Forfait Sur Mesure",
+    "description": "Vous avez un projet spécifique ?",
+    "subtitle": "Contactez-moi pour discuter de vos besoins et obtenir un devis personnalisé",
+    "buttonText": "Me contacter"
+  }
+}

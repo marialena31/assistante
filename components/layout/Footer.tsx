@@ -1,77 +1,56 @@
 import Link from 'next/link';
+import footerContent from '../../content/components/footer.json';
 
 export default function Footer() {
   return (
-    <footer className="bg-dark text-white">
-      <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gradient">Maria-Lena Pietri</h3>
-            <p className="text-gray-300 leading-relaxed">
-              Assistante administrative freelance
-              <br />
-              Simplifiez votre quotidien administratif
-            </p>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold">Navigation</h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/" className="text-gray-300 hover:text-white transition-all">
-                  Accueil
-                </Link>
-              </li>
-              <li>
-                <Link href="/services" className="text-gray-300 hover:text-white transition-all">
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="text-gray-300 hover:text-white transition-all">
-                  À propos
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-all">
-                  Contact
-                </Link>
-              </li>
+    <footer className="bg-white border-t border-gray-100">
+      <div className="container py-8">
+        {/* Main Content */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <Link href="/" className="mb-6">
+            <h3 className="text-xl font-bold text-gradient">{footerContent.title}</h3>
+          </Link>
+          <nav className="mb-6">
+            <ul className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+              {footerContent.navigation.links.map((link, index) => (
+                <li key={index}>
+                  <Link
+                    href={link.href}
+                    className="text-gray-600 hover:text-primary transition-colors"
+                  >
+                    {link.text}
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
-          
-          <div className="space-y-4">
-            <h3 className="text-xl font-bold">Contact</h3>
-            <ul className="space-y-3 text-gray-300">
-              <li>
-                <a href="mailto:contact@marialena-pietri.fr" className="hover:text-white transition-all">
-                  contact@marialena-pietri.fr
-                </a>
-              </li>
-              <li>
-                <a href="tel:+33761811101" className="hover:text-white transition-all">
-                  +33 7 61 81 11 01
-                </a>
-              </li>
-              <li>Colomiers, France</li>
-              <li>Disponible en télétravail</li>
-            </ul>
+          </nav>
+          <div className="text-gray-600 max-w-md mx-auto">
+            <p className="mb-2">{footerContent.subtitle}</p>
+            <p className="mb-6">{footerContent.description}</p>
+            <a
+              href={`mailto:${footerContent.contact.items[0].text}`}
+              className="text-primary hover:text-primary-dark transition-colors"
+            >
+              {footerContent.contact.items[0].text}
+            </a>
           </div>
         </div>
-        
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">
-              {new Date().getFullYear()} Maria-Lena Pietri. Tous droits réservés.
-            </p>
-            <div className="flex gap-6">
-              <Link href="/mentions-legales" className="text-gray-400 hover:text-white transition-all text-sm">
-                Mentions légales
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-100 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-gray-500">
+            {new Date().getFullYear()} {footerContent.legal.copyright}
+          </p>
+          <div className="flex gap-6">
+            {footerContent.legal.links.map((link, index) => (
+              <Link
+                key={index}
+                href={link.href}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                {link.text}
               </Link>
-              <Link href="/politique-confidentialite" className="text-gray-400 hover:text-white transition-all text-sm">
-                Politique de confidentialité
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </div>

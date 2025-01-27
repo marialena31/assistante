@@ -5,31 +5,7 @@ import FadeIn from '../components/animations/FadeIn';
 import StaggerChildren, { StaggerItem } from '../components/animations/StaggerChildren';
 import Counter from '../components/animations/Counter';
 import AnimatedButton from '../components/ui/AnimatedButton';
-
-const services = [
-  {
-    icon: '📋',
-    title: 'Gestion Administrative',
-    description: 'Gestion du courrier, des emails, classement et archivage des documents.',
-  },
-  {
-    icon: '💼',
-    title: 'Support Organisationnel',
-    description: 'Organisation de réunions, gestion d\'agenda, planification d\'événements.',
-  },
-  {
-    icon: '📊',
-    title: 'Assistance Comptable',
-    description: 'Suivi des factures, notes de frais, et préparation des documents comptables.',
-  },
-];
-
-const stats = [
-  { number: 95, suffix: '%', label: 'Satisfaction Client' },
-  { number: 30, suffix: '+', label: 'Clients accompagnés' },
-  { number: 20, suffix: '+', label: 'Années d\'Expérience' },
-  { number: 24, suffix: 'h', label: 'Délai de Réponse' },
-];
+import indexContent from '../content/pages/index.json';
 
 export default function Home() {
   return (
@@ -44,17 +20,17 @@ export default function Home() {
             <FadeIn direction="right">
               <div className="space-y-6">
                 <h1 className="h1 text-gradient">
-                  Votre assistante freelance polyvalente.
+                  {indexContent.hero.title}
                 </h1>
                 <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
-                  Forte d'une expérience diversifiée dans l'assistanat, la gestion de projets et le commerce, je mets mon expertise à votre service pour vous faire gagner du temps et de l'efficacité.
+                  {indexContent.hero.description}
                 </p>
                 <div className="flex flex-wrap gap-4 pt-4">
-                  <AnimatedButton href="/services" variant="primary">
-                    Découvrez mes services
+                  <AnimatedButton href={indexContent.hero.buttons.primary.link} variant="primary">
+                    {indexContent.hero.buttons.primary.text}
                   </AnimatedButton>
-                  <AnimatedButton href="/contact" variant="outline">
-                    Contactez-moi dès aujourd’hui pour un devis gratuit.
+                  <AnimatedButton href={indexContent.hero.buttons.secondary.link} variant="outline">
+                    {indexContent.hero.buttons.secondary.text}
                   </AnimatedButton>
                 </div>
               </div>
@@ -82,17 +58,17 @@ export default function Home() {
           <FadeIn>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="h2 mb-6">
-                Mes Services
+                {indexContent.services.title}
               </h2>
               <p className="text-lg text-gray-600">
-                Des solutions adaptées à vos besoins pour optimiser votre gestion administrative
+                {indexContent.services.subtitle}
               </p>
             </div>
           </FadeIn>
 
           <StaggerChildren>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service, index) => (
+              {indexContent.services.items.map((service, index) => (
                 <StaggerItem key={index}>
                   <div className="card card-hover h-full">
                     <div className="text-4xl mb-6">{service.icon}</div>
@@ -120,7 +96,7 @@ export default function Home() {
       <section className="section-sm bg-primary text-white">
         <div className="container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
-            {stats.map((stat, index) => (
+            {indexContent.stats.map((stat, index) => (
               <FadeIn key={index} delay={index * 0.1}>
                 <div className="text-center">
                   <div className="text-3xl md:text-4xl font-bold mb-2">
@@ -140,18 +116,18 @@ export default function Home() {
           <FadeIn>
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="h2 mb-6">
-                Prête à vous accompagner dans vos projets
+                {indexContent.callToAction.title}
               </h2>
               <p className="text-lg md:text-xl mb-8 text-white/90">
-                Contactez-moi pour discuter de vos besoins en assistance administrative
+                {indexContent.callToAction.description}
               </p>
               <motion.a
-                href="/contact"
+                href={indexContent.callToAction.buttonLink}
                 className="inline-block bg-white text-accent hover:bg-gray-100 px-8 py-4 rounded-xl font-medium text-lg transition-all shadow-soft hover:shadow-strong"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Me contacter
+                {indexContent.callToAction.buttonText}
               </motion.a>
             </div>
           </FadeIn>

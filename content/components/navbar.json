@@ -1,0 +1,21 @@
+{
+  "brand": {
+    "text": "Maria-Lena Pietri",
+    "href": "/"
+  },
+  "navigation": [
+    { "name": "Accueil", "href": "/" },
+    { "name": "Services", "href": "/services" },
+    { "name": "À propos", "href": "/about" },
+    { "name": "Tarifs", "href": "/tarifs" },
+    { "name": "Contact", "href": "/contact" }
+  ],
+  "cta": {
+    "text": "Demander un devis",
+    "href": "/contact"
+  },
+  "mobileMenu": {
+    "openLabel": "Open menu",
+    "closeLabel": "Close menu"
+  }
+}
