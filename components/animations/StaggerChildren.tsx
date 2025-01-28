@@ -14,6 +14,30 @@ interface StaggerItemProps extends HTMLMotionProps<"div"> {
   className?: string;
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
 export default function StaggerChildren({
   children,
   delay = 0,
@@ -25,14 +49,7 @@ export default function StaggerChildren({
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      variants={{
-        visible: {
-          transition: {
-            delayChildren: delay,
-            staggerChildren: staggerDelay,
-          },
-        },
-      }}
+      variants={containerVariants}
       className={className}
     >
       {children}
@@ -40,9 +57,13 @@ export default function StaggerChildren({
   );
 }
 
-export const StaggerItem: React.FC<StaggerItemProps> = ({ children, className, ...props }) => {
+export const StaggerItem: React.FC<StaggerItemProps> = ({ children, className = '', ...props }) => {
   return (
-    <motion.div className={className} {...props}>
+    <motion.div
+      variants={itemVariants}
+      className={className}
+      {...props}
+    >
       {children}
     </motion.div>
   );

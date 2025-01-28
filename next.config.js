@@ -4,10 +4,31 @@ const nextConfig = {
   swcMinify: true,
   poweredByHeader: false,
   images: {
-    unoptimized: true,
+    domains: ['marialena-pietri.fr', 'bthmhtzrpzzyvsweybwo.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'marialena-pietri.fr',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'bthmhtzrpzzyvsweybwo.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+  webpack: (config) => {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      stream: false,
+      constants: false,
+    };
+    return config;
   },
 };
 

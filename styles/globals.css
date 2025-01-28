@@ -1,51 +1,77 @@
+/**
+ * Global CSS Styles
+ * This file contains global styles and Tailwind CSS configuration
+ */
+
+/* Tailwind Directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Root Variables */
 :root {
+  --primary: #0070f3;
+  --primary-dark: #0051a2;
+  --secondary: #7928ca;
+  --secondary-dark: #4c1d80;
   --foreground-rgb: 15, 23, 42;
   --background-rgb: 255, 255, 255;
 }
 
+/* Base Styles */
 @layer base {
   html {
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-light text-dark antialiased;
+    @apply bg-light text-dark antialiased min-h-screen;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+    text-rendering: optimizeLegibility;
   }
 
+  /* Typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-bold tracking-tight;
+    @apply font-medium tracking-tight;
   }
 }
 
+/* Component Styles */
 @layer components {
   .container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+  
+  .section {
+    @apply py-12 sm:py-16 lg:py-20;
+  }
+
+  .section-sm {
+    @apply py-12 sm:py-16;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center px-6 py-3 
-           rounded-lg font-medium text-base shadow-soft
-           transition-all duration-300;
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg transition-all duration-200 ease-in-out;
   }
 
   .btn-primary {
-    @apply bg-primary text-light hover:bg-primary/90 hover:shadow-strong 
-           hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-primary-500 text-white hover:bg-primary-600;
   }
 
   .btn-accent {
-    @apply bg-accent text-light hover:bg-accent/90 hover:shadow-strong
-           hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-accent text-white hover:bg-accent/90;
   }
 
   .btn-outline {
-    @apply border-2 border-primary text-primary bg-light/90
-           hover:bg-primary hover:text-light hover:-translate-y-0.5
-           active:translate-y-0;
+    @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-500 hover:text-white;
+  }
+
+  .btn-white {
+    @apply bg-white text-primary-500 hover:bg-gray-100;
   }
 
   .card {
@@ -56,18 +82,29 @@
     @apply hover:shadow-strong hover:-translate-y-1;
   }
 
-  .section {
-    @apply py-16 sm:py-24;
+  /* Animation Classes */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+    -webkit-animation: fadeIn 0.5s ease-out forwards;
   }
 
-  .section-sm {
-    @apply py-12 sm:py-16;
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+    -webkit-animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-toast {
+    animation: toastSlide 0.3s ease-out forwards;
+    -webkit-animation: toastSlide 0.3s ease-out forwards;
   }
 }
 
+/* Utility Classes */
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
   }
 
   .h1 {
@@ -82,11 +119,70 @@
     @apply text-2xl md:text-3xl font-bold;
   }
 
-  .animate-fade-in {
-    animation: fade-in 0.5s ease-out forwards;
+  .text-balance {
+    text-wrap: balance;
   }
+}
 
-  .animate-slide-up {
-    animation: slide-up 0.5s ease-out forwards;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes slideUp {
+  from {
+    -webkit-transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    -webkit-transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toastSlide {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes toastSlide {
+  from {
+    -webkit-transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    -webkit-transform: translateY(0);
+    opacity: 1;
   }
 }

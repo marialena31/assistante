@@ -73,7 +73,8 @@ export default function FAQ() {
             </p>
             <AnimatedButton 
               href={faqContent.callToAction.buttonLink} 
-              variant="white"
+              variant="outline"
+              className="bg-white text-accent hover:bg-white/90"
             >
               {faqContent.callToAction.buttonText}
             </AnimatedButton>

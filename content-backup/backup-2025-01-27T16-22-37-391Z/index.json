@@ -1,0 +1,184 @@
+{
+  "slug": "index",
+  "path": "pages/index.json",
+  "content": {
+    "hero": {
+      "title": "Votre assistante freelance polyvalente.",
+      "description": "Forte d'une expérience diversifiée dans l'assistanat, la gestion de projets et le commerce, je mets mon expertise à votre service pour vous faire gagner du temps et de l'efficacité.",
+      "buttons": {
+        "primary": {
+          "text": "Découvrez mes services",
+          "link": "/services"
+        },
+        "secondary": {
+          "text": "Contactez-moi dès aujourd'hui pour un devis gratuit.",
+          "link": "/contact"
+        }
+      }
+    },
+    "services": {
+      "title": "Mes Services",
+      "subtitle": "Des solutions adaptées à vos besoins pour optimiser votre gestion administrative",
+      "items": [
+        {
+          "icon": "📋",
+          "title": "Gestion Administrative",
+          "description": "Gestion du courrier, des emails, classement et archivage des documents."
+        },
+        {
+          "icon": "💼",
+          "title": "Support Organisationnel",
+          "description": "Organisation de réunions, gestion d'agenda, planification d'événements."
+        },
+        {
+          "icon": "📊",
+          "title": "Assistance Comptable",
+          "description": "Suivi des factures, notes de frais, et préparation des documents comptables."
+        },
+        {
+          "icon": "👥",
+          "title": "Assistance RH",
+          "description": "Gestion des arrivées/départs, rédaction d'annonces et coordination des formations."
+        },
+        {
+          "icon": "🎯",
+          "title": "Assistance Commerciale",
+          "description": "Élaboration de devis, gestion des commandes et création de catalogues."
+        },
+        {
+          "icon": "⚖️",
+          "title": "Assistance Juridique",
+          "description": "Préparation des documents juridiques et veille réglementaire RGPD."
+        }
+      ]
+    },
+    "sectors": {
+      "title": "Des solutions adaptées à votre secteur d'activité",
+      "subtitle": "Que vous soyez dans le juridique, le BTP, l'immobilier, les technologies ou que vous dirigiez une TPE, je propose des services personnalisés pour vous accompagner efficacement.",
+      "items": [
+        {
+          "icon": "⚖️",
+          "title": "Juridique",
+          "description": "Une assistance rigoureuse pour vos dossiers juridiques.",
+          "link": "/secteurs#juridique",
+          "buttonText": "Découvrir",
+          "features": [
+            "Gestion des dossiers juridiques",
+            "Préparation de documents",
+            "Coordination avec les clients"
+          ]
+        },
+        {
+          "icon": "🏗️",
+          "title": "BTP",
+          "description": "Optimisez la gestion de vos chantiers avec un support administratif expert.",
+          "link": "/secteurs#btp",
+          "buttonText": "Découvrir",
+          "features": [
+            "Suivi des contrats fournisseurs",
+            "Gestion des plannings",
+            "Dossiers administratifs"
+          ]
+        },
+        {
+          "icon": "🏠",
+          "title": "Immobilier",
+          "description": "Un soutien efficace pour vos transactions et relations clients.",
+          "link": "/secteurs#immobilier",
+          "buttonText": "Découvrir",
+          "features": [
+            "Gestion des dossiers clients",
+            "Suivi des mandats",
+            "Organisation des visites"
+          ]
+        },
+        {
+          "icon": "💡",
+          "title": "Technologies et Startups",
+          "description": "Appuyez-vous sur un accompagnement agile pour vos projets innovants.",
+          "link": "/secteurs#tech",
+          "buttonText": "Découvrir",
+          "features": [
+            "Gestion de projets agiles",
+            "Suivi budgétaire",
+            "Coordination d'événements"
+          ]
+        },
+        {
+          "icon": "🏪",
+          "title": "TPE, Commerçants et Artisans",
+          "description": "Simplifiez votre gestion quotidienne avec des services adaptés à vos besoins.",
+          "link": "/secteurs#tpe",
+          "buttonText": "Découvrir",
+          "features": [
+            "Gestion administrative",
+            "Support comptable",
+            "Transition numérique"
+          ]
+        }
+      ],
+      "cta": {
+        "title": "Un accompagnement sur-mesure",
+        "text": "Quel que soit votre secteur, bénéficiez d'un accompagnement sur-mesure pour gagner en efficacité et en sérénité.",
+        "buttonText": "Découvrez toutes mes offres par secteur",
+        "buttonLink": "/secteurs"
+      }
+    },
+    "stats": [
+      {
+        "number": 50,
+        "suffix": "km",
+        "label": "Rayon d'intervention"
+      },
+      {
+        "number": 30,
+        "suffix": "+",
+        "label": "Clients accompagnés"
+      },
+      {
+        "number": 20,
+        "suffix": "+",
+        "label": "Années d'Expérience"
+      },
+      {
+        "number": 24,
+        "suffix": "h",
+        "label": "Délai de Réponse"
+      }
+    ],
+    "pricing": {
+      "title": "Des tarifs adaptés à vos besoins",
+      "description": "Choisissez une formule flexible et transparente : prestations ponctuelles, forfaits mensuels ou abonnements sur-mesure. Bénéficiez d'un accompagnement personnalisé, adapté à vos attentes.",
+      "buttonText": "Consultez tous les détails",
+      "buttonLink": "/tarifs",
+      "highlights": [
+        {
+          "name": "Forfait Horaire",
+          "price": "40€",
+          "unit": "par heure",
+          "description": "Pour vos besoins ponctuels"
+        },
+        {
+          "name": "Forfait Essentiel",
+          "price": "350€",
+          "unit": "pour 10h/mois",
+          "description": "Pour vos besoins réguliers"
+        },
+        {
+          "name": "Abonnement Standard",
+          "price": "600€",
+          "unit": "par mois",
+          "description": "Pour une collaboration à long terme"
+        }
+      ]
+    },
+    "callToAction": {
+      "title": "Prête à vous accompagner dans vos projets",
+      "description": "Contactez-moi pour discuter de vos besoins en assistance administrative",
+      "buttonText": "Me contacter",
+      "buttonLink": "/contact"
+    }
+  },
+  "created_at": "2025-01-27T16:22:37.381Z",
+  "updated_at": "2025-01-27T16:22:37.381Z"
+}

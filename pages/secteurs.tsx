@@ -171,7 +171,11 @@ export default function Secteurs() {
             <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
               Contactez-moi pour discuter de vos besoins spécifiques et obtenir une proposition sur mesure.
             </p>
-            <AnimatedButton href="/contact" variant="white">
+            <AnimatedButton 
+              href="/contact" 
+              variant="outline"
+              className="bg-white text-accent hover:bg-white/90"
+            >
               Me contacter
             </AnimatedButton>
           </div>

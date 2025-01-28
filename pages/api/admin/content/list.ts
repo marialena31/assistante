@@ -1,63 +1,41 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import { createSecureHandler } from '../../../../utils/auth';
 import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
-import path from 'path';
+import type { Database } from '../../../../types/database';
 
-// Initialize Supabase client for authentication
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+type SecureHandlerContext = {
+  user: any;
+  supabaseAdmin: ReturnType<typeof createClient<Database>>;
+};
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default createSecureHandler(async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  { supabaseAdmin }: SecureHandlerContext
+) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    const { table } = req.query;
+
+    if (!table || typeof table !== 'string') {
+      return res.status(400).json({ error: 'Table name is required' });
     }
 
-    const token = authHeader.split(' ')[1];
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    
-    if (error || !user) {
-      return res.status(401).json({ message: 'Unauthorized' });
+    const { data, error } = await supabaseAdmin
+      .from('contents')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
     }
 
-    // Get list of JSON files from content directory
-    const contentDir = path.join(process.cwd(), 'content');
-    const pages: any[] = [];
-
-    function scanDirectory(dir: string) {
-      const items = fs.readdirSync(dir);
-      
-      items.forEach(item => {
-        const fullPath = path.join(dir, item);
-        const stat = fs.statSync(fullPath);
-        
-        if (stat.isDirectory()) {
-          scanDirectory(fullPath);
-        } else if (path.extname(item) === '.json') {
-          const relativePath = path.relative(contentDir, fullPath);
-          const name = path.basename(item, '.json');
-          
-          pages.push({
-            id: relativePath,
-            name: name,
-            filePath: relativePath,
-          });
-        }
-      });
-    }
-
-    scanDirectory(contentDir);
-
-    return res.status(200).json({ pages });
+    return res.status(200).json(data);
   } catch (error: any) {
     console.error('Error listing content:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(500).json({ error: error.message });
   }
-}
+});

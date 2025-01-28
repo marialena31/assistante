@@ -1,0 +1,138 @@
+{
+  "slug": "tpe",
+  "path": "pages/secteurs/tpe.json",
+  "content": {
+    "hero": {
+      "title": "Solutions administratives pour TPE, Commerçants et Artisans",
+      "description": "Simplifiez votre gestion quotidienne avec des services adaptés à vos besoins spécifiques. Notre expertise vous permet de vous concentrer sur votre cœur de métier pendant que nous gérons efficacement vos tâches administratives.",
+      "image": "/images/sectors/tpe-hero.jpg"
+    },
+    "introduction": {
+      "title": "Pourquoi externaliser votre gestion administrative ?",
+      "points": [
+        {
+          "title": "Gagnez du temps précieux",
+          "description": "Concentrez-vous sur votre activité principale et votre développement commercial"
+        },
+        {
+          "title": "Réduisez vos coûts",
+          "description": "Évitez les charges fixes d'un emploi permanent tout en bénéficiant d'une expertise professionnelle"
+        },
+        {
+          "title": "Restez organisé",
+          "description": "Bénéficiez d'une gestion professionnelle de vos documents et obligations administratives"
+        }
+      ]
+    },
+    "services": [
+      {
+        "icon": "📊",
+        "title": "Gestion administrative et commerciale",
+        "description": "Une gestion quotidienne efficace de vos documents et relations clients",
+        "items": [
+          "Rédaction et envoi de devis et factures",
+          "Suivi des paiements et relances des impayés",
+          "Gestion des courriers et des emails professionnels",
+          "Mise à jour des bases de données clients et fournisseurs"
+        ]
+      },
+      {
+        "icon": "💰",
+        "title": "Gestion pré-comptable",
+        "description": "Un suivi rigoureux de vos documents financiers",
+        "items": [
+          "Préparation des documents pour le comptable",
+          "Suivi des dépenses et des recettes",
+          "Classement et archivage des pièces comptables"
+        ]
+      },
+      {
+        "icon": "👥",
+        "title": "Gestion des ressources humaines",
+        "description": "Un accompagnement complet pour la gestion de vos employés",
+        "items": [
+          "Élaboration des bulletins de paie et déclarations sociales",
+          "Rédaction des contrats de travail et formalités d'embauche",
+          "Suivi des congés et absences"
+        ]
+      },
+      {
+        "icon": "💻",
+        "title": "Support à la transition numérique",
+        "description": "Un accompagnement vers la digitalisation de votre entreprise",
+        "items": [
+          "Mise en place de la facturation électronique",
+          "Formation à l'utilisation d'outils numériques adaptés",
+          "Gestion de la présence en ligne (site web, réseaux sociaux)"
+        ]
+      }
+    ],
+    "packages": {
+      "title": "Nos forfaits adaptés à vos besoins",
+      "description": "Choisissez la formule qui correspond le mieux à vos besoins et à votre budget",
+      "items": [
+        {
+          "name": "Pack Essentiel",
+          "price": "200€",
+          "period": "par mois",
+          "description": "Idéal pour les entrepreneurs individuels",
+          "features": [
+            "Gestion des devis et factures (jusqu'à 20 par mois)",
+            "Suivi des paiements et relances",
+            "Gestion des emails professionnels"
+          ],
+          "highlight": false
+        },
+        {
+          "name": "Pack Sérénité",
+          "price": "350€",
+          "period": "par mois",
+          "description": "Pour une gestion administrative complète",
+          "features": [
+            "Toutes les prestations du pack Essentiel",
+            "Préparation des documents comptables",
+            "Gestion des ressources humaines de base (paie, contrats)"
+          ],
+          "highlight": true
+        },
+        {
+          "name": "Pack Premium",
+          "price": "500€",
+          "period": "par mois",
+          "description": "Une solution tout-en-un pour votre entreprise",
+          "features": [
+            "Toutes les prestations du pack Sérénité",
+            "Support à la transition numérique",
+            "Gestion complète de la présence en ligne"
+          ],
+          "highlight": false
+        }
+      ]
+    },
+    "testimonials": {
+      "title": "Ce que disent nos clients",
+      "items": [
+        {
+          "quote": "Un gain de temps considérable qui me permet de me concentrer sur mon commerce",
+          "author": "Marie L.",
+          "position": "Commerçante",
+          "image": "/images/testimonials/marie.jpg"
+        },
+        {
+          "quote": "Un accompagnement professionnel et des conseils précieux pour la gestion de mon entreprise",
+          "author": "Pierre D.",
+          "position": "Artisan",
+          "image": "/images/testimonials/pierre.jpg"
+        }
+      ]
+    },
+    "callToAction": {
+      "title": "Prêt à simplifier votre gestion administrative ?",
+      "description": "Contactez-moi pour discuter de vos besoins et obtenir un devis personnalisé gratuit",
+      "buttonText": "Demander un devis gratuit",
+      "buttonLink": "/contact"
+    }
+  },
+  "created_at": "2025-01-27T16:22:37.385Z",
+  "updated_at": "2025-01-27T16:22:37.385Z"
+}

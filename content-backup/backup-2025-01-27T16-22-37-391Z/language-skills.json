@@ -1,0 +1,25 @@
+{
+  "slug": "language-skills",
+  "path": "components/language-skills.json",
+  "content": {
+    "languages": [
+      {
+        "name": "Français",
+        "level": "Natif",
+        "percentage": 100
+      },
+      {
+        "name": "Anglais",
+        "level": "B2",
+        "percentage": 80
+      },
+      {
+        "name": "Espagnol",
+        "level": "B1",
+        "percentage": 60
+      }
+    ]
+  },
+  "created_at": "2025-01-27T16:22:37.374Z",
+  "updated_at": "2025-01-27T16:22:37.374Z"
+}

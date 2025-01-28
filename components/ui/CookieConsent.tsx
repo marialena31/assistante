@@ -30,17 +30,15 @@ export default function CookieConsent() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-0 left-0 right-0 bg-white shadow-strong z-50"
+          className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-light shadow-strong"
         >
-          <div className="container py-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex-1">
-                <p className="text-dark mb-2">
-                  {cookieContent.message.main}
-                </p>
+          <div className="container mx-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-dark flex-grow">
+                <p>{cookieContent.message.main}</p>
                 <p className="text-sm text-gray-600">
                   {cookieContent.message.details}{' '}
-                  <Link href={cookieContent.privacyPolicy.href} className="text-primary hover:text-primary-dark underline">
+                  <Link href={cookieContent.privacyPolicy.href} className="text-primary hover:underline">
                     {cookieContent.privacyPolicy.text}
                   </Link>
                   .
@@ -49,13 +47,13 @@ export default function CookieConsent() {
               <div className="flex gap-4">
                 <button
                   onClick={declineCookies}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-dark transition-colors"
+                  className="btn btn-outline"
                 >
                   {cookieContent.buttons.decline.text}
                 </button>
                 <button
                   onClick={acceptCookies}
-                  className="px-6 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary-dark transition-colors"
+                  className="btn btn-primary"
                 >
                   {cookieContent.buttons.accept.text}
                 </button>

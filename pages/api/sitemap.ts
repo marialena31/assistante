@@ -20,7 +20,6 @@ function generateSiteMap() {
               <loc>${SITE_URL}${page}</loc>
               <lastmod>${new Date().toISOString()}</lastmod>
               <changefreq>monthly</changefreq>
-              <priority>${page === '' ? '1.0' : '0.8'}</priority>
             </url>
           `;
         })

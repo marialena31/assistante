@@ -16,7 +16,7 @@ interface FormData {
   message: string;
 }
 
-const inputClasses = "mt-1 block w-full rounded-lg border-gray-300 bg-white px-4 py-2 text-gray-900 focus:border-primary focus:ring-primary sm:text-sm";
+const inputClasses = "mt-1 block w-full rounded-lg border-gray-300 border px-4 py-2 text-gray-900 focus:border-primary focus:ring-primary sm:text-sm";
 const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
 const errorClasses = "mt-1 text-sm text-red-600";
 
@@ -144,7 +144,7 @@ export default function Contact() {
                 </div>
 
                 <div className="bg-white rounded-lg p-6 shadow-md">
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate={true}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="firstName" className={labelClasses}>
@@ -154,7 +154,6 @@ export default function Contact() {
                           type="text"
                           id="firstName"
                           className={inputClasses}
-                          placeholder={contactContent.form.fields.firstName.placeholder}
                           {...register('firstName', { required: contactContent.form.fields.firstName.required })}
                         />
                         {errors.firstName && (
@@ -170,7 +169,6 @@ export default function Contact() {
                           type="text"
                           id="lastName"
                           className={inputClasses}
-                          placeholder={contactContent.form.fields.lastName.placeholder}
                           {...register('lastName', { required: contactContent.form.fields.lastName.required })}
                         />
                         {errors.lastName && (
@@ -188,7 +186,6 @@ export default function Contact() {
                           type="email"
                           id="email"
                           className={inputClasses}
-                          placeholder={contactContent.form.fields.email.placeholder}
                           {...register('email', {
                             required: contactContent.form.fields.email.required,
                             pattern: {
@@ -214,7 +211,6 @@ export default function Contact() {
                           type="tel"
                           id="phone"
                           className={inputClasses}
-                          placeholder={contactContent.form.fields.phone.placeholder}
                           {...register('phone', { required: contactContent.form.fields.phone.required })}
                         />
                         {errors.phone && (
@@ -231,7 +227,6 @@ export default function Contact() {
                         id="message"
                         rows={4}
                         className={inputClasses}
-                        placeholder={contactContent.form.fields.message.placeholder}
                         {...register('message', { required: contactContent.form.fields.message.required })}
                       />
                       {errors.message && (

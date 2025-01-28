@@ -22,21 +22,27 @@ export default function CustomHead({
       <meta name="description" content={description} />
       <meta name="keywords" content={keywords} />
       
-      {/* Favicon */}
-      <link rel="icon" href={headContent.meta.favicon} />
-      
-      {/* Open Graph */}
-      <meta property="og:url" content={siteUrl} />
+      {/* OpenGraph Meta Tags */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={`${siteUrl}${ogImage}`} />
       <meta property="og:type" content="website" />
+      <meta property="og:url" content={siteUrl} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:alt" content={title} />
       
-      {/* Twitter */}
+      {/* Twitter Meta Tags */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+      <meta name="twitter:image" content={ogImage} />
+      
+      {/* Favicon */}
+      <link rel="icon" href={headContent.meta.favicon} />
+      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+      <link rel="manifest" href="/site.webmanifest" />
+      <meta name="theme-color" content="#ffffff" />
       
       {/* Viewport */}
       <meta name="viewport" content={headContent.meta.viewport} />

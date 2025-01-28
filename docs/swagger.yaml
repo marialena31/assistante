@@ -1,0 +1,1049 @@
+openapi: 3.0.0
+info:
+  title: Maria-Lena Pietri Portfolio API
+  description: API documentation for Maria-Lena Pietri's portfolio website
+  version: 1.0.0
+  contact:
+    name: Maria-Lena Pietri
+    url: https://marialena-pietri.fr
+
+servers:
+  - url: https://marialena-pietri.fr/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    SupabaseAuth:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Supabase session cookie for authentication
+    
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: integer
+
+    Content:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        slug:
+          type: string
+        title:
+          type: string
+        content:
+          type: object
+        type:
+          type: string
+          enum: [page, section, component]
+        updatedAt:
+          type: string
+          format: date-time
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, scheduled]
+        category:
+          type: string
+
+    ContactMessage:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+      required:
+        - name
+        - email
+        - message
+
+    BlogPost:
+      type: object
+      required:
+        - title
+        - slug
+        - content
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+          nullable: true
+        content:
+          type: string
+        featured_image:
+          type: string
+          nullable: true
+          description: Filename only, not full path
+        status:
+          type: string
+          enum: [draft, published, scheduled]
+          default: draft
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        author:
+          type: string
+          format: uuid
+          nullable: true
+        seo:
+          type: object
+          nullable: true
+          properties:
+            title:
+              type: string
+              nullable: true
+            description:
+              type: string
+              nullable: true
+            keywords:
+              type: array
+              items:
+                type: string
+              nullable: true
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogCategory'
+
+    BlogCategory:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    BlogPostArray:
+      type: array
+      items:
+        $ref: '#/components/schemas/BlogPost'
+
+    NewsletterSubscription:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        is_deleted:
+          type: boolean
+        categories:
+          type: array
+          items:
+            type: string
+        promo_code_used:
+          type: boolean
+        last_modal_shown:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - created_at
+        - is_deleted
+        - categories
+
+    AppointmentSettings:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        photo_url:
+          type: string
+        google_calendar_sync_url:
+          type: string
+        email_reminder_enabled:
+          type: boolean
+        sms_reminder_enabled:
+          type: boolean
+        email_reminder_template:
+          type: string
+        sms_reminder_template:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AppointmentDuration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        duration_minutes:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    AppointmentPurpose:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Appointment:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - company_name
+        - email
+        - purpose_id
+        - appointment_type
+        - appointment_date
+        - duration_minutes
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        purpose_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          maxLength: 2000
+        appointment_type:
+          type: string
+          enum: [phone, video, in_person]
+        appointment_date:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        reminders_enabled:
+          type: boolean
+        status:
+          type: string
+          enum: [confirmed, cancelled, modified]
+        google_calendar_event_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  /auth-mlp2024/signin:
+    post:
+      summary: Sign in to admin interface
+      description: Authenticate user with email and password. Only @marialena-pietri.fr emails are allowed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  session:
+                    type: object
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not an authorized email domain
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth-mlp2024/register:
+    post:
+      summary: Register new admin user
+      description: Register a new admin user. Only @marialena-pietri.fr emails are allowed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '201':
+          description: User successfully created
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth-mlp2024/reset:
+    post:
+      summary: Reset password
+      description: Send password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Reset email sent
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /secure-dashboard-mlp2024:
+    get:
+      summary: Admin dashboard
+      description: Access the admin dashboard
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard rendered successfully
+        '401':
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not authorized (non-admin user)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /contents/{slug}:
+    get:
+      summary: Get content by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Content found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Content'
+        '404':
+          description: Content not found
+
+    put:
+      summary: Update content
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Content'
+      responses:
+        '200':
+          description: Content updated
+        '403':
+          description: Unauthorized
+        '404':
+          description: Content not found
+
+  /posts:
+    get:
+      summary: List posts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Posts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      pages:
+                        type: integer
+                      current:
+                        type: integer
+
+    post:
+      summary: Create post
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        '201':
+          description: Post created
+        '403':
+          description: Unauthorized
+
+  /posts/{id}:
+    get:
+      summary: Get post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+    put:
+      summary: Update post
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        '200':
+          description: Post updated
+        '403':
+          description: Unauthorized
+        '404':
+          description: Post not found
+
+    delete:
+      summary: Delete post
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post deleted
+        '403':
+          description: Unauthorized
+        '404':
+          description: Post not found
+
+  /contact:
+    post:
+      summary: Submit contact form
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactMessage'
+      responses:
+        '200':
+          description: Message sent
+        '400':
+          description: Invalid input
+        '429':
+          description: Too many requests
+
+  /api/blog/import:
+    post:
+      summary: Import blog posts with categories
+      description: Import multiple blog posts. Categories will be automatically created if they don't exist.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BlogPost'
+      responses:
+        '200':
+          description: Posts imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request body
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - Invalid email domain
+
+  /api/blog/upload-image:
+    post:
+      summary: Upload blog post image
+      tags:
+        - Blog
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: Image file (max 10MB, supported formats - jpg, png, webp)
+      responses:
+        '200':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filename:
+                    type: string
+                    description: The filename to use for referencing the image
+        '400':
+          description: No image provided or invalid image
+        '413':
+          description: Image too large (max 10MB)
+        '500':
+          description: Server error during upload or processing
+
+  /api/blog/posts:
+    get:
+      summary: List blog posts
+      tags:
+        - Blog
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, scheduled]
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+
+  /api/newsletter/subscribe:
+    post:
+      summary: Subscribe to newsletter
+      tags:
+        - Newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                categories:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - email
+      responses:
+        '200':
+          description: Successfully subscribed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  email:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid email
+        '409':
+          description: Email already subscribed
+        '500':
+          description: Server error
+
+  /api/newsletter/unsubscribe:
+    post:
+      summary: Unsubscribe from newsletter
+      tags:
+        - Newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required:
+                - email
+      responses:
+        '200':
+          description: Successfully unsubscribed
+        '404':
+          description: Email not found
+        '500':
+          description: Server error
+
+  /api/newsletter/subscriptions:
+    get:
+      summary: Get all newsletter subscriptions
+      tags:
+        - Newsletter
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of subscriptions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        email:
+                          type: string
+                        created_at:
+                          type: string
+                          format: date-time
+                        categories:
+                          type: array
+                          items:
+                            type: string
+                        promo_code_used:
+                          type: boolean
+                        is_deleted:
+                          type: boolean
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+
+  /appointments/settings:
+    get:
+      summary: Get appointment system settings
+      tags:
+        - Appointments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentSettings'
+
+  /appointments/durations:
+    get:
+      summary: Get available appointment durations
+      tags:
+        - Appointments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppointmentDuration'
+
+  /appointments/purposes:
+    get:
+      summary: Get available appointment purposes
+      tags:
+        - Appointments
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppointmentPurpose'
+
+  /appointments/availability:
+    get:
+      summary: Get available time slots
+      tags:
+        - Appointments
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: duration
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilitySlot'
+
+  /appointments:
+    post:
+      summary: Create a new appointment
+      tags:
+        - Appointments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/appointments:
+    get:
+      summary: List all appointments
+      tags:
+        - Admin
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [confirmed, cancelled, modified]
+        - name: from_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+
+  /admin/appointments/{id}:
+    put:
+      summary: Update appointment status
+      tags:
+        - Admin
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [confirmed, cancelled, modified]
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+
+  /admin/settings:
+    put:
+      summary: Update appointment settings
+      tags:
+        - Admin
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentSettings'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentSettings'
+
+  /admin/availability:
+    put:
+      summary: Update availability slots
+      tags:
+        - Admin
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AvailabilitySlot'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilitySlot'

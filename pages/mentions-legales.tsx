@@ -24,7 +24,7 @@ export default function MentionsLegales() {
                       {section.items.map((item, idx) => (
                         <li key={idx}>
                           <strong>{item.label}:</strong>{' '}
-                          {item.isLink ? (
+                          {('isLink' in item) ? (
                             <a href={`https://${item.value}`} className="text-primary hover:text-primary-dark">
                               {item.value}
                             </a>

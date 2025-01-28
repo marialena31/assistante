@@ -5,6 +5,7 @@
   },
   "navigation": [
     { "name": "Accueil", "href": "/" },
+    { "name": "À propos", "href": "/about" },
     { "name": "Services", "href": "/services" },
     { "name": "Secteurs", "href": "/secteurs" },
     { "name": "Tarifs", "href": "/tarifs" },

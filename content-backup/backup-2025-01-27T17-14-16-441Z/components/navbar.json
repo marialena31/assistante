@@ -1,0 +1,8 @@
+{
+  "title": "navbar",
+  "content": "{\"brand\":{\"text\":\"Maria-Lena Pietri\",\"href\":\"/\"},\"navigation\":[{\"name\":\"Accueil\",\"href\":\"/\"},{\"name\":\"Services\",\"href\":\"/services\"},{\"name\":\"Secteurs\",\"href\":\"/secteurs\"},{\"name\":\"Tarifs\",\"href\":\"/tarifs\"},{\"name\":\"FAQ\",\"href\":\"/faq\"},{\"name\":\"Contact\",\"href\":\"/contact\"}],\"cta\":{\"text\":\"Demander un devis\",\"href\":\"/contact\"},\"mobileMenu\":{\"openLabel\":\"Open menu\",\"closeLabel\":\"Close menu\"}}",
+  "type": "component",
+  "slug": "navbar",
+  "created_at": "2025-01-27T17:14:16.430Z",
+  "updated_at": "2025-01-27T17:14:16.430Z"
+}

@@ -2,3 +2,5 @@
 .env.local
 /node_modules
 .next
+public/images/blog/*
+!public/images/blog/.gitkeep

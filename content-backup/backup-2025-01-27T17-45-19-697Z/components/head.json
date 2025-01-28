@@ -1,0 +1,6 @@
+{
+  "title": "head",
+  "content": "{\"defaults\":{\"title\":\"Maria-Lena Pietri | Assistante Administrative Freelance\",\"description\":\"Simplifiez votre quotidien administratif avec une assistante freelance polyvalente. Services de gestion administrative, comptabilité, relation client et plus.\",\"keywords\":\"assistante administrative, freelance, gestion administrative, comptabilité, relation client, organisation, assistance virtuelle\",\"ogImage\":\"/images/og-image.jpg\"},\"meta\":{\"favicon\":\"/favicon.ico\",\"viewport\":\"width=device-width, initial-scale=1.0\",\"robots\":\"index, follow\",\"google\":\"notranslate\"}}",
+  "type": "component",
+  "slug": "head"
+}

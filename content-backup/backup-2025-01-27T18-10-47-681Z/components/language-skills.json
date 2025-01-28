@@ -1,0 +1,6 @@
+{
+  "title": "language-skills",
+  "content": "{\n  \"languages\": [\n    {\n      \"name\": \"Français\",\n      \"level\": \"Natif\",\n      \"percentage\": 100\n    },\n    {\n      \"name\": \"Anglais\",\n      \"level\": \"B2\",\n      \"percentage\": 80\n    },\n    {\n      \"name\": \"Espagnol\",\n      \"level\": \"B1\",\n      \"percentage\": 60\n    }\n  ]\n}",
+  "type": "component",
+  "slug": "language-skills"
+}

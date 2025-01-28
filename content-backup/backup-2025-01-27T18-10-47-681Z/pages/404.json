@@ -1,0 +1,6 @@
+{
+  "title": "404",
+  "content": "{\n  \"title\": \"404\",\n  \"heading\": \"Page non trouvée\",\n  \"description\": \"La page que vous recherchez n'existe pas ou a été déplacée.\",\n  \"button\": {\n    \"text\": \"Retour à l'accueil\",\n    \"link\": \"/\"\n  }\n}",
+  "type": "page",
+  "slug": "404"
+}

@@ -1,0 +1,6 @@
+{
+  "title": "cookie-consent",
+  "content": "{\n  \"message\": {\n    \"main\": \"Ce site utilise des cookies pour améliorer votre expérience de navigation.\",\n    \"details\": \"En continuant à naviguer sur ce site, vous acceptez notre\"\n  },\n  \"privacyPolicy\": {\n    \"text\": \"politique de confidentialité\",\n    \"href\": \"/politique-confidentialite\"\n  },\n  \"buttons\": {\n    \"accept\": {\n      \"text\": \"Accepter\",\n      \"value\": \"accepted\"\n    },\n    \"decline\": {\n      \"text\": \"Refuser\",\n      \"value\": \"declined\"\n    }\n  },\n  \"storageKey\": \"cookieConsent\"\n}",
+  "type": "component",
+  "slug": "cookie-consent"
+}

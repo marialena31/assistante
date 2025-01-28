@@ -1,1 +1,23 @@
-Be careful all the content must be manage with json files that are in the content folder.
+READ documentation of the project BEFORE make any modification on the project codebase.
+READ official documentation of the component you use if you have an issue, and before make modification if there is no information in project documentation.
+Be careful all the content must be manage with supabase database
+The content must always be update with the admin interface
+the admin connexion is manage by supabase auth, use the latest supabase auth system
+The api schema is the only one exposed for security reasons, and we must respect this configuration.
+Now all our authentication and admin routes are using the new secure paths Login=/auth-mlp2024/signin, Register=/auth-mlp2024/register, Reset Password=/auth-mlp2024/reset, Auth Callback=/auth-mlp2024/callback, Admin Dashboard=/secure-dashboard-mlp2024
+Don't modify css configuration in next.config.js, it is broken the website
+For each modification, check documentation before, and update the documentation after the modification. It is in docs directory.
+For each works on the API, checl swagger.yaml in docs directory before making a new modification. And update the swagger after modification.
+docs/README.md - Main project documentation
+docs/DEVELOPMENT.md - Development guidelines
+docs/API.md - API and database documentation
+docs/SETUP.md - Setup and configuration guide
+docs/swagger.yaml - Swagger/OpenAPI specification
+Use the new @supabase/ssr package instead of the deprecated auth-helpers.
+Tables in supabase are in API schema, NOT public schema.
+For displaying message in front, use the Toast message component.
+Don't modify css configuration in next.config.js, it is broken the website
+We can't run the Supabase migrations locally. In this case, we need to update the table structure directly through the Supabase dashboard.
+Content are managed with TinyMCE html editor and not markdown.
+Use the legacy Image component to import Image from 'next/legacy/image'. This should resolve the fetchPriority warning. The legacy Image component is still fully supported by Next.js and is recommended when you encounter compatibility issues with the new Image component
+The project is using the Pages Router (pages directory), don't use App Router.

@@ -1,26 +1,21 @@
 import { motion } from 'framer-motion';
 import { ReactNode } from 'react';
+import Image from 'next/image';
 
 interface FadeInProps {
   children: ReactNode;
+  duration?: number;
   delay?: number;
   direction?: 'up' | 'down' | 'left' | 'right';
-  duration?: number;
   className?: string;
 }
 
-export default function FadeIn({
-  children,
-  delay = 0,
-  direction = 'up',
-  duration = 0.5,
-  className = '',
-}: FadeInProps) {
+const FadeIn = ({ children, duration = 0.5, delay = 0, direction = 'up', className = '' }: FadeInProps) => {
   const directions = {
-    up: { y: 20 },
-    down: { y: -20 },
-    left: { x: 20 },
-    right: { x: -20 },
+    up: { y: 40 },
+    down: { y: -40 },
+    left: { x: 40 },
+    right: { x: -40 },
   };
 
   return (
@@ -34,7 +29,7 @@ export default function FadeIn({
         x: 0,
         y: 0,
       }}
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true }}
       transition={{
         duration,
         delay,
@@ -45,4 +40,6 @@ export default function FadeIn({
       {children}
     </motion.div>
   );
-}
+};
+
+export default FadeIn;

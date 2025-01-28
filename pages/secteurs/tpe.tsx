@@ -29,10 +29,10 @@ export default function TPESector() {
             <FadeIn direction="left">
               <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 shadow-strong">
                 <Image
-                  src={tpeContent.hero.image}
-                  alt="Services pour TPE"
-                  width={1024}
-                  height={768}
+                   src={tpeContent.hero.image}
+                   alt="Services pour TPE"
+                   width={1024}
+                   height={768}
                   className="object-cover hover:scale-105 transition-transform duration-300"
                   priority
                 />
@@ -196,7 +196,7 @@ export default function TPESector() {
             <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
               {tpeContent.callToAction.description}
             </p>
-            <AnimatedButton href={tpeContent.callToAction.buttonLink} variant="white">
+            <AnimatedButton href={tpeContent.callToAction.buttonLink} variant="primary">
               {tpeContent.callToAction.buttonText}
             </AnimatedButton>
           </div>

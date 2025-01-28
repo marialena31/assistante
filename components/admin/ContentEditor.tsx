@@ -1,36 +1,55 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { createClient } from '../../utils/supabase/client';
 
-const JSONEditor = dynamic(() => import('./JSONEditor'), { ssr: false });
+const DynamicForm = dynamic(() => import('./DynamicForm'), { ssr: false });
 
 type PageContent = {
   id: string;
-  name: string;
+  slug: string;
+  path: string;
   content: any;
-  filePath: string;
 };
 
-export default function ContentEditor() {
+interface ContentEditorProps {
+  section: string;
+}
+
+export default function ContentEditor({ section }: ContentEditorProps) {
   const [pages, setPages] = useState<PageContent[]>([]);
   const [selectedPage, setSelectedPage] = useState<PageContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tinyMceApiKey = process.env.NEXT_PUBLIC_TINYMCE_API_KEY;
+
+  // Initialize Supabase client with useMemo to ensure consistent reference
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
+    if (!tinyMceApiKey) {
+      console.error('TinyMCE API key is missing. Please add NEXT_PUBLIC_TINYMCE_API_KEY to your environment variables.');
+    }
     fetchPages();
-  }, []);
+  }, [section]);
 
   const fetchPages = async () => {
     try {
-      // Fetch list of available JSON files
-      const response = await fetch('/api/admin/content/list');
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.message);
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Not authenticated');
 
-      setPages(data.pages);
+      // Fetch list of pages from database
+      const { data, error } = await supabase
+        .from('pages')
+        .select('*')
+        .order('title', { ascending: true });
+
+      if (error) throw error;
+
+      setPages(data || []);
+      setError(null);
     } catch (err: any) {
+      console.error('Error fetching pages:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -38,19 +57,9 @@ export default function ContentEditor() {
   };
 
   const handlePageSelect = async (pageId: string) => {
-    try {
-      const page = pages.find(p => p.id === pageId);
-      if (!page) return;
-
-      // Fetch the content of the selected JSON file
-      const response = await fetch(`/api/admin/content/read?path=${page.filePath}`);
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.message);
-
-      setSelectedPage({ ...page, content: data.content });
-    } catch (err: any) {
-      setError(err.message);
+    const page = pages.find(p => p.id === pageId);
+    if (page) {
+      setSelectedPage(page);
     }
   };
 
@@ -58,84 +67,73 @@ export default function ContentEditor() {
     if (!selectedPage) return;
 
     setSaving(true);
-    setError(null);
-
     try {
-      // Save content back to JSON file
-      const response = await fetch('/api/admin/content/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          path: selectedPage.filePath,
-          content,
-        }),
-      });
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Not authenticated');
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      const { error } = await supabase
+        .from('pages')
+        .update({ content, updated_at: new Date().toISOString() })
+        .eq('id', selectedPage.id);
 
-      // Update local state
-      setSelectedPage(prev => prev ? { ...prev, content } : null);
+      if (error) throw error;
+
+      // Update the local state
+      setPages(pages.map(p => 
+        p.id === selectedPage.id 
+          ? { ...p, content }
+          : p
+      ));
+      setSelectedPage({ ...selectedPage, content });
+      setError(null);
     } catch (err: any) {
+      console.error('Error saving page:', err);
       setError(err.message);
     } finally {
       setSaving(false);
     }
   };
 
+  const handleAddField = () => {
+    // Add field logic here
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!tinyMceApiKey) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-md">
+        <h3 className="font-medium">Configuration Error</h3>
+        <p>TinyMCE API key is missing. Please add NEXT_PUBLIC_TINYMCE_API_KEY to your environment variables.</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="h2">Éditeur de contenu</h2>
-        <select
-          value={selectedPage?.id || ''}
-          onChange={(e) => handlePageSelect(e.target.value)}
-          className="form-select rounded-lg border-gray-300 focus:border-primary focus:ring-primary"
-        >
-          <option value="">Sélectionner une page</option>
-          {pages.map((page) => (
-            <option key={page.id} value={page.id}>
-              {page.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {error && (
-        <div className="mb-6 bg-red-50 text-red-500 p-4 rounded-lg">
-          {error}
+      {error && <div className="text-red-500">{error}</div>}
+      {selectedPage ? (
+        <DynamicForm 
+          content={selectedPage.content} 
+          onSave={handleSave} 
+        />
+      ) : (
+        <div className="p-4 bg-gray-50 rounded-lg text-gray-500">
+          Sélectionnez un fichier à éditer
         </div>
       )}
-
-      {selectedPage && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">
-                Fichier : {selectedPage.filePath}
-              </p>
-            </div>
-            {saving && (
-              <span className="text-sm text-primary">Enregistrement...</span>
-            )}
-          </div>
-
-          <JSONEditor
-            content={selectedPage.content}
-            onChange={handleSave}
-          />
-        </div>
-      )}
+      <button
+        onClick={() => handleAddField()}
+        className="bg-blue-500 text-white rounded px-4 py-2"
+      >
+        Ajouter une nouvelle page
+      </button>
     </div>
   );
 }

@@ -1,0 +1,67 @@
+{
+  "slug": "footer",
+  "path": "components/footer.json",
+  "content": {
+    "title": "Maria-Lena Pietri",
+    "subtitle": "Assistante administrative freelance",
+    "description": "Simplifiez votre quotidien administratif",
+    "navigation": {
+      "title": "Navigation",
+      "links": [
+        {
+          "text": "Accueil",
+          "href": "/"
+        },
+        {
+          "text": "Services",
+          "href": "/services"
+        },
+        {
+          "text": "À propos",
+          "href": "/about"
+        },
+        {
+          "text": "Tarifs",
+          "href": "/tarifs"
+        },
+        {
+          "text": "Contact",
+          "href": "/contact"
+        }
+      ]
+    },
+    "contact": {
+      "title": "Contact",
+      "items": [
+        {
+          "type": "email",
+          "text": "contact@marialena-pietri.fr",
+          "href": "mailto:contact@marialena-pietri.fr"
+        },
+        {
+          "type": "location",
+          "text": "Colomiers, France"
+        },
+        {
+          "type": "availability",
+          "text": "Disponible en télétravail et déplacement sur site (50km autours de Colomiers)"
+        }
+      ]
+    },
+    "legal": {
+      "copyright": "Maria-Lena Pietri. Tous droits réservés.",
+      "links": [
+        {
+          "text": "Mentions légales",
+          "href": "/mentions-legales"
+        },
+        {
+          "text": "Politique de confidentialité",
+          "href": "/politique-confidentialite"
+        }
+      ]
+    }
+  },
+  "created_at": "2025-01-27T16:27:08.361Z",
+  "updated_at": "2025-01-27T16:27:08.361Z"
+}

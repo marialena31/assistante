@@ -1,103 +1,205 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { motion, AnimatePresence } from 'framer-motion';
-import navbarContent from '../../content/components/navbar.json';
+import { useState, useEffect } from 'react';
+import { SECURE_ROUTES } from '../../config/secureRoutes';
+import { createBrowserClient } from '@supabase/ssr';
+import Image from 'next/legacy/image';
 
 export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      setIsAdmin(!!session?.user);
+    } catch (error) {
+      console.error('Error checking user session:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push(SECURE_ROUTES.SIGNIN);
+  };
+
+  const links = [
+    { href: '/', label: 'Accueil' },
+    { href: '/blog', label: 'Blog' },
+    { href: '/secteurs', label: 'Secteurs' },
+    { href: '/services', label: 'Services' },
+    { href: '/tarifs', label: 'Tarifs' },
+    { href: '/rendez-vous', label: 'Rendez-vous' },
+    { href: '/about', label: 'À propos' },
+    { href: '/contact', label: 'Contact' },
+  ];
+
+  const adminLinks = [
+    { href: SECURE_ROUTES.ADMIN, label: 'Dashboard' },
+    { href: '/secure-dashboard-mlp2024/blog', label: 'Blog' },
+    { href: '/secure-dashboard-mlp2024/appointments', label: 'Rendez-vous' },
+    { href: '/secure-dashboard-mlp2024/newsletter', label: 'Newsletter' },
+  ];
+
+  if (router.pathname.startsWith('/auth-mlp2024')) return null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-soft">
-      <div className="container">
-        <div className="flex justify-between items-center h-20">
-          <Link href={navbarContent.brand.href} className="flex items-center">
-            <span className="text-2xl font-bold text-gradient">
-              {navbarContent.brand.text}
-            </span>
-          </Link>
-          
-          {/* Desktop menu */}
-          <div className="hidden md:flex md:items-center md:space-x-2">
-            {navbarContent.navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  router.pathname === item.href
-                    ? 'text-primary bg-gray-50'
-                    : 'text-dark hover:text-primary hover:bg-gray-50'
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-            <Link
-              href={navbarContent.cta.href}
-              className="ml-4 bg-accent hover:bg-accent/90 text-white px-6 py-2 rounded-lg text-sm font-medium transition-all shadow-soft hover:shadow-strong"
-            >
-              {navbarContent.cta.text}
-            </Link>
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <button
-              type="button"
-              className="text-dark hover:text-primary p-2 rounded-lg transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              <span className="sr-only">
-                {mobileMenuOpen ? navbarContent.mobileMenu.closeLabel : navbarContent.mobileMenu.openLabel}
-              </span>
-              {mobileMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            className="md:hidden bg-white border-t border-gray-100"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="container py-4 space-y-1">
-              {navbarContent.navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`block px-4 py-2 text-base font-medium rounded-lg transition-all ${
-                    router.pathname === item.href
-                      ? 'text-primary bg-gray-50'
-                      : 'text-dark hover:text-primary hover:bg-gray-50'
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <Link
-                href={navbarContent.cta.href}
-                className="block mt-4 px-4 py-2 text-base font-medium text-white bg-accent hover:bg-accent/90 rounded-lg transition-all shadow-soft hover:shadow-strong"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {navbarContent.cta.text}
+    <header className="fixed w-full top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <Link href="/" className="block relative w-10 h-10">
+                <Image
+                  src="/images/mp-logo.png"
+                  alt="Logo"
+                  layout="fill"
+                  objectFit="contain"
+                  priority
+                />
               </Link>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              {links.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`${
+                    router.pathname === href
+                      ? 'border-primary text-gray-900'
+                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            {isAdmin && (
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
+                {adminLinks.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`${
+                      router.pathname.startsWith(href)
+                        ? 'border-primary text-gray-900'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                >
+                  Déconnexion
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center sm:hidden">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+              >
+                <span className="sr-only">Ouvrir le menu</span>
+                {!isOpen ? (
+                  <svg
+                    className="block h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className="block h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        <div
+          className={`${isOpen ? 'block' : 'hidden'} sm:hidden`}
+          id="mobile-menu"
+        >
+          <div className="pt-2 pb-3 space-y-1">
+            {links.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`${
+                  router.pathname === href
+                    ? 'bg-primary/5 border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+              >
+                {label}
+              </Link>
+            ))}
+
+            {isAdmin && (
+              <>
+                {adminLinks.map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className={`${
+                      router.pathname.startsWith(href)
+                        ? 'bg-primary/5 border-primary text-primary'
+                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+                  >
+                    {label}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                >
+                  Déconnexion
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+    </header>
   );
 }

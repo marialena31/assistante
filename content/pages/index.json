@@ -4,12 +4,12 @@
     "description": "Forte d'une expérience diversifiée dans l'assistanat, la gestion de projets et le commerce, je mets mon expertise à votre service pour vous faire gagner du temps et de l'efficacité.",
     "buttons": {
       "primary": {
-        "text": "Découvrez mes services",
-        "link": "/services"
+        "text": "Prendre rendez-vous",
+        "link": "/rendez-vous"
       },
       "secondary": {
-        "text": "Contactez-moi dès aujourd'hui pour un devis gratuit.",
-        "link": "/contact"
+        "text": "Découvrir mes services",
+        "link": "/services"
       }
     }
   },

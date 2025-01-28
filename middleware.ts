@@ -1,54 +1,97 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+import { SECURE_ROUTES } from './config/secureRoutes'
 
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
 
-  // Allow access to auth callback
-  if (req.nextUrl.pathname.startsWith('/auth/callback')) {
-    return res;
+  const { pathname } = request.nextUrl
+
+  // Check if the route is an admin route
+  if (pathname.startsWith('/secure-dashboard-mlp2024')) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+    // If there's no user or there's an error, redirect to login
+    if (!user || userError) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = SECURE_ROUTES.SIGNIN
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    // Check if user has the correct email domain
+    if (!user.email?.endsWith('@marialena-pietri.fr')) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = SECURE_ROUTES.SIGNIN
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
-  // Protect admin routes
-  if (req.nextUrl.pathname.startsWith('/admin')) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    // Allow access to login page
-    if (req.nextUrl.pathname === '/admin/login') {
-      if (session) {
-        // If user is signed in, redirect to admin dashboard
-        return NextResponse.redirect(new URL('/admin', req.url));
-      }
-      return res;
-    }
-
-    // Allow access to reset-password page
-    if (req.nextUrl.pathname === '/admin/reset-password') {
-      if (!session) {
-        // If no session, redirect to login
-        return NextResponse.redirect(new URL('/admin/login', req.url));
-      }
-      return res;
-    }
-
-    // Check auth status for other admin pages
-    if (!session) {
-      // If user is not signed in, redirect to login page
-      return NextResponse.redirect(new URL('/admin/login', req.url));
+  // If the route is a login route and user is already logged in, redirect to admin
+  if (pathname === SECURE_ROUTES.SIGNIN) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (user && !userError && user.email?.endsWith('@marialena-pietri.fr')) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = SECURE_ROUTES.ADMIN
+      return NextResponse.redirect(redirectUrl)
     }
   }
 
-  return res;
+  return response
 }
 
-// Ensure the middleware is only called for relevant paths
 export const config = {
-  matcher: ['/admin/:path*', '/auth/callback'],
-};
+  matcher: [
+    '/secure-dashboard-mlp2024/:path*',
+    '/auth-mlp2024/:path*'
+  ],
+}

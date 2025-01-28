@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from 'next/legacy/image';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
 import FadeIn from '../components/animations/FadeIn';
@@ -41,9 +41,9 @@ export default function Home() {
                 <Image
                   src="/images/hero.jpg"
                   alt="Photo Professionnelle"
-                  width={1024}
-                  height={768}
-                  className="object-cover hover:scale-105 transition-transform duration-300"
+                  layout="fill"
+                  objectFit="cover"
+                  className="hover:scale-105 transition-transform duration-300"
                   priority
                 />
               </div>
@@ -219,7 +219,7 @@ export default function Home() {
             <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
               {indexContent.callToAction.description}
             </p>
-            <AnimatedButton href={indexContent.callToAction.buttonLink} variant="white">
+            <AnimatedButton href={indexContent.callToAction.buttonLink} variant="primary">
               {indexContent.callToAction.buttonText}
             </AnimatedButton>
           </div>

@@ -1,0 +1,6 @@
+{
+  "title": "navbar",
+  "content": "{\n  \"brand\": {\n    \"text\": \"Maria-Lena Pietri\",\n    \"href\": \"/\"\n  },\n  \"navigation\": [\n    {\n      \"name\": \"Accueil\",\n      \"href\": \"/\"\n    },\n    {\n      \"name\": \"À propos\",\n      \"href\": \"/about\"\n    },\n    {\n      \"name\": \"Services\",\n      \"href\": \"/services\"\n    },\n    {\n      \"name\": \"Secteurs\",\n      \"href\": \"/secteurs\"\n    },\n    {\n      \"name\": \"Tarifs\",\n      \"href\": \"/tarifs\"\n    },\n    {\n      \"name\": \"FAQ\",\n      \"href\": \"/faq\"\n    },\n    {\n      \"name\": \"Contact\",\n      \"href\": \"/contact\"\n    }\n  ],\n  \"cta\": {\n    \"text\": \"Demander un devis\",\n    \"href\": \"/contact\"\n  },\n  \"mobileMenu\": {\n    \"openLabel\": \"Open menu\",\n    \"closeLabel\": \"Close menu\"\n  }\n}",
+  "type": "component",
+  "slug": "navbar"
+}

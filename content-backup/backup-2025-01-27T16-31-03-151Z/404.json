@@ -1,0 +1,15 @@
+{
+  "slug": "404",
+  "path": "pages/404.json",
+  "content": {
+    "title": "404",
+    "heading": "Page non trouvée",
+    "description": "La page que vous recherchez n'existe pas ou a été déplacée.",
+    "button": {
+      "text": "Retour à l'accueil",
+      "link": "/"
+    }
+  },
+  "created_at": "2025-01-27T16:31:03.136Z",
+  "updated_at": "2025-01-27T16:31:03.136Z"
+}

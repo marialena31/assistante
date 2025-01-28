@@ -1,0 +1,126 @@
+{
+  "slug": "mentions-legales",
+  "path": "pages/mentions-legales.json",
+  "content": {
+    "title": "Mentions Légales",
+    "lastUpdate": "24/01/2025",
+    "sections": [
+      {
+        "title": "1. Éditeur du site",
+        "content": "Le présent site est édité par :",
+        "items": [
+          {
+            "label": "Nom",
+            "value": "Maria-Lena Pietri"
+          },
+          {
+            "label": "Statut juridique",
+            "value": "Micro-entrepreneur"
+          },
+          {
+            "label": "SIRET",
+            "value": "48374376100056"
+          },
+          {
+            "label": "Numéro de TVA intracommunautaire",
+            "value": "FR36483743761"
+          },
+          {
+            "label": "Adresse",
+            "value": "Colomiers, France"
+          },
+          {
+            "label": "Contact",
+            "value": "contact@marialena-pietri.fr | +33 7 61 81 11 01"
+          }
+        ]
+      },
+      {
+        "title": "2. Responsable de la publication",
+        "items": [
+          {
+            "label": "Nom",
+            "value": "Maria-Lena Pietri"
+          },
+          {
+            "label": "Email",
+            "value": "contact@marialena-pietri.fr"
+          }
+        ]
+      },
+      {
+        "title": "3. Hébergeur du site",
+        "content": "Le site est hébergé par :",
+        "items": [
+          {
+            "label": "Nom",
+            "value": "Netlify"
+          },
+          {
+            "label": "Adresse",
+            "value": "2325 3rd Street, Suite 296, San Francisco, CA 94107, USA"
+          },
+          {
+            "label": "Site web",
+            "value": "www.netlify.com",
+            "isLink": true
+          }
+        ]
+      },
+      {
+        "title": "4. Propriété intellectuelle",
+        "paragraphs": [
+          "L'ensemble des contenus présents sur ce site (textes, images, logos, éléments graphiques, icônes, etc.) est protégé par le droit d'auteur et le droit de la propriété intellectuelle.",
+          "Toute reproduction, distribution, modification, adaptation ou publication, même partielle, de ces éléments est strictement interdite sans l'autorisation préalable écrite de Maria-Lena Pietri."
+        ]
+      },
+      {
+        "title": "5. Limitations de responsabilité",
+        "paragraphs": [
+          "L'éditeur du site s'efforce de fournir des informations aussi précises que possible. Toutefois, il ne peut garantir l'exactitude, l'exhaustivité ou l'actualité des informations diffusées sur le site.",
+          "Par conséquent, l'utilisateur reconnaît utiliser ces informations sous sa responsabilité exclusive."
+        ]
+      },
+      {
+        "title": "6. Protection des données personnelles",
+        "paragraphs": [
+          "Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, les informations collectées via le formulaire de contact sont strictement confidentielles et destinées à l'usage exclusif de Maria-Lena Pietri pour le traitement des demandes."
+        ],
+        "subsections": [
+          {
+            "title": "Droits des utilisateurs",
+            "content": "Vous disposez d'un droit d'accès, de rectification, de suppression et d'opposition concernant vos données personnelles. Pour exercer ces droits, vous pouvez contacter :",
+            "contact": "Email : contact@marialena-pietri.fr"
+          }
+        ]
+      },
+      {
+        "title": "7. Liens externes",
+        "paragraphs": [
+          "Ce site peut contenir des liens hypertextes redirigeant vers d'autres sites web. Maria-Lena Pietri ne peut être tenue responsable du contenu de ces sites tiers ni des éventuels dommages pouvant résulter de leur consultation."
+        ]
+      },
+      {
+        "title": "8. Conditions de vente",
+        "paragraphs": [
+          "Les services proposés sont destinés exclusivement à des professionnels. Les prestations sont facturées en hors taxes (HT).",
+          "Aucun droit de rétractation n'est applicable une fois la prestation entamée. Les paiements peuvent être effectués par virement bancaire ou carte bancaire."
+        ]
+      },
+      {
+        "title": "9. Cookies",
+        "paragraphs": [
+          "Le site utilise des cookies pour améliorer l'expérience utilisateur et analyser la fréquentation. Vous pouvez configurer vos préférences en matière de cookies depuis votre navigateur."
+        ]
+      },
+      {
+        "title": "10. Modification des mentions légales",
+        "paragraphs": [
+          "Maria-Lena Pietri se réserve le droit de modifier les présentes mentions légales à tout moment. Il est conseillé aux utilisateurs de les consulter régulièrement."
+        ]
+      }
+    ]
+  },
+  "created_at": "2025-01-27T16:29:17.406Z",
+  "updated_at": "2025-01-27T16:29:17.406Z"
+}
