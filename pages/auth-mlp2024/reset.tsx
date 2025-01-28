@@ -1,53 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout/Layout';
 import { createClient } from '../../utils/supabase/client';
 import { SECURE_ROUTES } from '../../config/secureRoutes';
+import { useToast } from '../../components/ui/Toast';
 
 export default function ResetPassword() {
   const router = useRouter();
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const { showToast } = useToast();
 
   useEffect(() => {
-    // Check if we have a session when the component mounts
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push(SECURE_ROUTES.LOGIN);
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (!session || error) {
+        showToast('Veuillez vous connecter pour réinitialiser votre mot de passe', 'error');
+        router.push(SECURE_ROUTES.SIGNIN);
       }
     };
     checkSession();
   }, [router]);
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      return;
-    }
+    setError(null);
+    setLoading(true);
 
     try {
-      setError(null);
-      setLoading(true);
-
       const { error } = await supabase.auth.updateUser({
         password: password
       });
 
       if (error) throw error;
 
-      setMessage('Mot de passe mis à jour avec succès');
-      setTimeout(() => {
-        router.push(SECURE_ROUTES.ADMIN);
-      }, 2000);
+      showToast('Mot de passe mis à jour avec succès', 'success');
+      router.push(SECURE_ROUTES.SIGNIN);
     } catch (error: any) {
       setError(error.message);
+      showToast(error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -62,60 +55,37 @@ export default function ResetPassword() {
               Réinitialiser votre mot de passe
             </h2>
           </div>
-          
-          <form className="mt-8 space-y-6" onSubmit={handlePasswordReset}>
+
+          <form className="mt-8 space-y-6" onSubmit={handleReset}>
             {error && (
               <div className="bg-red-50 text-red-500 p-4 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
-            
-            {message && (
-              <div className="bg-green-50 text-green-500 p-4 rounded-lg text-sm">
-                {message}
+                <p className="font-medium">Erreur:</p>
+                <p>{error}</p>
               </div>
             )}
 
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Nouveau mot de passe
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Nouveau mot de passe"
-                />
-              </div>
-              <div>
-                <label htmlFor="confirm-password" className="sr-only">
-                  Confirmer le nouveau mot de passe
-                </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Confirmer le nouveau mot de passe"
-                />
-              </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Nouveau mot de passe
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
+              />
             </div>
 
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
               >
-                {loading ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+                {loading ? 'Chargement...' : 'Réinitialiser le mot de passe'}
               </button>
             </div>
           </form>

@@ -3,40 +3,44 @@ import { useRouter } from 'next/router';
 import Layout from '../../components/layout/Layout';
 import { createClient } from '../../utils/supabase/client';
 import { SECURE_ROUTES } from '../../config/secureRoutes';
+import { useToast } from '../../components/ui/Toast';
 
 export default function Register() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
+  const { showToast } = useToast();
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
-      return;
-    }
+    setError(null);
+    setLoading(true);
 
     try {
-      setError(null);
-      setLoading(true);
+      if (!email.endsWith('@marialena-pietri.fr')) {
+        throw new Error("Seuls les utilisateurs avec une adresse email @marialena-pietri.fr peuvent s'inscrire");
+      }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}${SECURE_ROUTES.AUTH_CALLBACK}`,
+        },
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
 
       if (data) {
-        router.push(`${SECURE_ROUTES.LOGIN}?message=Vérifiez votre email pour confirmer votre compte`);
+        showToast('Vérifiez votre email pour confirmer votre compte', 'success');
+        router.push(SECURE_ROUTES.SIGNIN);
       }
     } catch (error: any) {
       setError(error.message);
+      showToast(error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -52,68 +56,51 @@ export default function Register() {
             </h2>
           </div>
           
-          <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
+          <form className="mt-8 space-y-6" onSubmit={handleRegister}>
             {error && (
               <div className="bg-red-50 text-red-500 p-4 rounded-lg text-sm">
-                {error}
+                <p className="font-medium">Erreur:</p>
+                <p>{error}</p>
               </div>
             )}
-            
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Email"
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Mot de passe
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Mot de passe"
-                />
-              </div>
-              <div>
-                <label htmlFor="confirm-password" className="sr-only">
-                  Confirmer le mot de passe
-                </label>
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                  placeholder="Confirmer le mot de passe"
-                />
-              </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Mot de passe
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
+              />
             </div>
 
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
               >
-                {loading ? 'Création du compte...' : 'Créer un compte'}
+                {loading ? 'Chargement...' : "S'inscrire"}
               </button>
             </div>
           </form>
