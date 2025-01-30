@@ -28,12 +28,15 @@ const nextConfig = {
       net: false,
       tls: false,
       path: false,
+      yaml: false,
       stream: false,
       constants: false,
     }
   };
     return config;
   },
+    // Ajoutez ceci pour gérer le CSS de swagger-ui-react
+    transpilePackages: ['swagger-ui-react']
 };
 
 module.exports = nextConfig;
