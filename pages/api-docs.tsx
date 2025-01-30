@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import SwaggerUI from 'swagger-ui-react';
 import 'swagger-ui-react/swagger-ui.css';
 import Layout from '../components/layout/Layout';
 import { GetServerSideProps } from 'next';
@@ -9,6 +8,9 @@ import path from 'path';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import AdminLayout from '../components/admin/AdminLayout';
+import dynamic from 'next/dynamic'
+
+const SwaggerUI = dynamic(() => import('swagger-ui-react'), { ssr: false });
 
 interface ApiDocsProps {
   spec: any;

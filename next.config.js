@@ -21,13 +21,17 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer })  => {
+    if (!isServer) {
     config.resolve.fallback = {
       ...config.resolve.fallback,
-      fs: false,
+      fs: false,  
+      net: false,
+      tls: false,
       path: false,
       stream: false,
       constants: false,
-    };
+    }
+  };
     return config;
   },
 };
