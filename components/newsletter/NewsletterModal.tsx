@@ -111,13 +111,14 @@ export default function NewsletterModal() {
                         Inscrivez-vous à notre newsletter pour recevoir nos actualités et profiter d'une réduction de 10% sur votre premier devis signé !
                       </p>
                       <p className="text-sm text-gray-500 mb-4">
-                        <strong>Avantages :</strong>
+                        <strong>Avantages :</strong></p>
+                        <div>
                         <ul className="list-disc list-inside mt-2">
                           <li>Code promo de 10% sur votre premier devis signé</li>
                           <li>Validité du code : 3 mois après réception</li>
                           <li>Code envoyé par email après inscription</li>
                         </ul>
-                      </p>
+                        </div>
                       <form onSubmit={handleSubmit} className="space-y-4">
                         <input
                           type="email"
