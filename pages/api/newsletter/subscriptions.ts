@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { createSecureHandler } from '../../../utils/auth';
+import { createSecureHandler } from '../../../utils/supabase/auth';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '../../../types/database';
 

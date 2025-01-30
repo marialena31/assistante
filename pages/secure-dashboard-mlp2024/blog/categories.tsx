@@ -11,7 +11,7 @@ export default function Categories() {
   const [loading, setLoading] = useState(true);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const supabase = createClient();
-  const { showToast } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     checkUser();
@@ -22,11 +22,21 @@ export default function Categories() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) {
-        router.push(SECURE_ROUTES.LOGIN);
+        toast.showErrorToast('Veuillez vous connecter pour accéder à cette page');
+        router.push(SECURE_ROUTES.SIGNIN);
+        return;
       }
-    } catch (error) {
+
+      if (!user.email?.endsWith('@marialena-pietri.fr')) {
+        await supabase.auth.signOut();
+        toast.showErrorToast('Accès non autorisé');
+        router.push(SECURE_ROUTES.SIGNIN);
+        return;
+      }
+    } catch (error: any) {
       console.error('Error checking auth status:', error);
-      router.push(SECURE_ROUTES.LOGIN);
+      toast.showErrorToast(error.message);
+      router.push(SECURE_ROUTES.SIGNIN);
     }
   };
 
@@ -42,7 +52,7 @@ export default function Categories() {
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      showToast('Erreur lors du chargement des catégories', 'error');
+      toast.showErrorToast('Erreur lors du chargement des catégories');
     } finally {
       setLoading(false);
     }
@@ -62,12 +72,12 @@ export default function Categories() {
 
       if (error) throw error;
 
-      showToast('Catégorie sauvegardée avec succès', 'success');
+      toast.showSuccessToast('Catégorie sauvegardée avec succès');
       setEditingCategory(null);
       fetchCategories();
     } catch (error: any) {
       console.error('Error saving category:', error);
-      showToast(error.message || 'Erreur lors de la sauvegarde', 'error');
+      toast.showErrorToast(error.message || 'Erreur lors de la sauvegarde');
     }
   };
 
@@ -81,11 +91,11 @@ export default function Categories() {
 
       if (error) throw error;
 
-      showToast('Catégorie supprimée avec succès', 'success');
+      toast.showSuccessToast('Catégorie supprimée avec succès');
       fetchCategories();
     } catch (error: any) {
       console.error('Error deleting category:', error);
-      showToast(error.message || 'Erreur lors de la suppression', 'error');
+      toast.showErrorToast(error.message || 'Erreur lors de la suppression');
     }
   };
 

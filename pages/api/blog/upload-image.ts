@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
-import fs from 'fs/promises';
-import { createSecureHandler } from '../../../utils/auth';
+import fs from 'fs';
+import { createSecureHandler } from '../../../utils/supabase/auth';
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../../types/database';
+import type { Database } from '../../../types/supabase';
 
 type SecureHandlerContext = {
   user: any;
@@ -35,7 +35,6 @@ export default createSecureHandler(async function handler(
 
     const [fields, files] = await form.parse(req);
     const file = files.image?.[0];
-    const articleTitle = fields.title?.[0];
 
     if (!file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -51,75 +50,40 @@ export default createSecureHandler(async function handler(
       return res.status(400).json({ error: 'File size too large. Maximum size is 10MB.' });
     }
 
-    const fileExt = file.originalFilename?.split('.').pop()?.toLowerCase();
-    if (!fileExt || !['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
-      return res.status(400).json({ error: 'Invalid file type. Allowed extensions: jpg, jpeg, png, gif, webp' });
-    }
+    // Read file content
+    const fileContent = await fs.promises.readFile(file.filepath);
 
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `blog/${fileName}`;
+    // Generate unique filename
+    const timestamp = Date.now();
+    const extension = file.originalFilename?.split('.').pop() || 'jpg';
+    const filename = `${timestamp}.${extension}`;
 
-    let fileBuffer;
-    try {
-      fileBuffer = await fs.readFile(file.filepath);
-    } catch (error) {
-      console.error('Error reading file:', error);
-      return res.status(500).json({ error: 'Error reading uploaded file' });
-    }
-
-    // Generate alt text from article title or use a default
-    const altText = articleTitle ? 
-      `Image illustrant l'article : ${articleTitle}` : 
-      'Image d\'illustration pour l\'article';
-
-    // Upload the file with metadata
-    const { error: uploadError, data: uploadData } = await supabaseAdmin.storage
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin
+      .storage
       .from(STORAGE_BUCKET)
-      .upload(filePath, fileBuffer, {
-        contentType: file.mimetype,
-        cacheControl: '3600',
-        upsert: false,
-        duplex: 'half',
-        metadata: {
-          alt: altText,
-        }
+      .upload(filename, fileContent, {
+        contentType: file.mimetype || 'image/jpeg',
+        upsert: true,
       });
 
     if (uploadError) {
-      console.error('Upload error:', uploadError);
-      return res.status(500).json({ 
-        error: uploadError.message,
-        details: uploadError.message.includes('Bucket not found') 
-          ? `Please create a bucket named '${STORAGE_BUCKET}' in your Supabase dashboard and ensure it has public access.`
-          : uploadError.message
-      });
+      console.error('Error uploading to Supabase:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload image' });
     }
 
-    if (!uploadData?.path) {
-      return res.status(500).json({ error: 'No upload path returned' });
-    }
-
-    // Get the public URL
-    const { data: { publicUrl } } = supabaseAdmin.storage
+    // Get public URL
+    const { data: { publicUrl } } = supabaseAdmin
+      .storage
       .from(STORAGE_BUCKET)
-      .getPublicUrl(uploadData.path);
+      .getPublicUrl(filename);
 
-    // Clean up the temporary file
-    try {
-      await fs.unlink(file.filepath);
-    } catch (error) {
-      console.error('Error cleaning up temp file:', error);
-    }
+    // Clean up temp file
+    await fs.promises.unlink(file.filepath);
 
-    return res.status(200).json({ 
-      url: publicUrl,
-      alt: altText
-    });
-  } catch (error: any) {
-    console.error('Server error:', error);
-    return res.status(500).json({ 
-      error: error.message || 'Internal server error',
-      details: error.stack
-    });
+    return res.status(200).json({ url: publicUrl });
+  } catch (error) {
+    console.error('Error handling upload:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 });

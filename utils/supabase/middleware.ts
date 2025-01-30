@@ -1,15 +1,16 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import type { Database } from '../../types/database';
 import { type NextRequest, NextResponse } from 'next/server'
 import { SECURE_ROUTES } from '../../config/secureRoutes';
 
-export async function updateSession(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database, 'api'>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -32,41 +33,40 @@ export async function updateSession(request: NextRequest) {
           })
         },
       },
+      db: {
+        schema: 'api'
+      }
     }
   )
 
-  // Refresh session if expired - required for Server Components
-  const { data: { user } } = await supabase.auth.getUser()
+  // Always use getUser() in middleware as per Supabase docs
+  const { data: { user }, error } = await supabase.auth.getUser()
 
-  // If accessing auth pages while logged in, redirect to admin
-  if (request.nextUrl.pathname.startsWith('/auth-mlp2024')) {
-    if (user?.email?.endsWith('@marialena-pietri.fr')) {
-      return NextResponse.redirect(new URL(SECURE_ROUTES.ADMIN, request.url))
+  // Handle auth redirects
+  const path = request.nextUrl.pathname
+  
+  // If accessing secure routes without auth
+  if (path.startsWith('/secure-dashboard-mlp2024')) {
+    if (!user?.email?.endsWith('@marialena-pietri.fr')) {
+      const redirectUrl = new URL('/auth-mlp2024/signin', request.url)
+      redirectUrl.searchParams.set('returnUrl', path)
+      return NextResponse.redirect(redirectUrl)
     }
-    return response
   }
 
-  // If accessing admin pages while not logged in or not admin, redirect to login
-  if (request.nextUrl.pathname.startsWith('/secure-dashboard-mlp2024')) {
-    if (!user) {
-      return NextResponse.redirect(new URL(SECURE_ROUTES.LOGIN, request.url))
-    }
-    if (!user.email?.endsWith('@marialena-pietri.fr')) {
-      await supabase.auth.signOut()
-      return NextResponse.redirect(new URL(SECURE_ROUTES.LOGIN, request.url))
+  // If accessing auth pages while already authenticated
+  if (path.startsWith('/auth-mlp2024') && !path.includes('/callback')) {
+    if (user?.email?.endsWith('@marialena-pietri.fr')) {
+      return NextResponse.redirect(new URL(SECURE_ROUTES.ADMIN, request.url))
     }
   }
 
   return response
 }
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request)
-}
-
 export const config = {
   matcher: [
     '/auth-mlp2024/:path*',
-    '/secure-dashboard-mlp2024/:path*'
+    '/secure-dashboard-mlp2024/:path*',
   ],
 }

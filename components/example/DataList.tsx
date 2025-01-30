@@ -17,21 +17,18 @@ export default function DataList() {
   const { showToast } = useToast();
 
   const handleDelete = async (id: string) => {
-    try {
-      const success = await mutateData({
-        table: 'example_table',
-        action: 'DELETE',
-        filter: { id }
-      });
+    const toastCallback = (message: string, type: 'success' | 'error') => {
+      showToast('Notification', message, type);
+    };
 
-      if (success) {
-        showToast('Item supprimé avec succès', 'success');
-        mutate();
-      } else {
-        throw new Error('Failed to delete item');
-      }
-    } catch (error) {
-      showToast("Erreur lors de la suppression de l'item", 'error');
+    const success = await mutateData({
+      table: 'example_table',
+      action: 'DELETE',
+      filter: { id }
+    }, toastCallback, mutate);
+
+    if (success) {
+      toastCallback('Élément supprimé avec succès', 'success');
     }
   };
 

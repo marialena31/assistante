@@ -53,14 +53,13 @@ export const getServerSideProps: GetServerSideProps<ApiDocsProps> = async ({ req
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Get user from auth token (always use getUser on server)
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (authError || !user?.email?.endsWith('@marialena-pietri.fr')) {
     return {
       redirect: {
-        destination: '/auth-mlp2024/signin?redirect=/api-docs',
+        destination: '/auth-mlp2024/signin',
         permanent: false,
       },
     };

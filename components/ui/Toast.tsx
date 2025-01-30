@@ -4,12 +4,18 @@ type ToastType = 'success' | 'error' | 'info' | 'warning';
 
 interface Toast {
   id: number;
+  title: string;
   message: string;
   type: ToastType;
 }
 
 interface ToastContextType {
-  showToast: (message: string, type: ToastType) => void;
+  [x: string]: any;
+  showToast: (title: string, message: string, type: ToastType) => void;
+  showSuccessToast: (message: string) => void;
+  showErrorToast: (message: string) => void;
+  showWarningToast: (message: string) => void;
+  showInfoToast: (message: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -25,16 +31,38 @@ export function useToast() {
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((message: string, type: ToastType) => {
+  const showToast = useCallback((title: string, message: string, type: ToastType) => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, title, message, type }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(toast => toast.id !== id));
     }, 5000);
   }, []);
 
+  const showSuccessToast = useCallback((message: string) => {
+    showToast('Succès', message, 'success');
+  }, [showToast]);
+
+  const showErrorToast = useCallback((message: string) => {
+    showToast('Erreur', message, 'error');
+  }, [showToast]);
+
+  const showWarningToast = useCallback((message: string) => {
+    showToast('Attention', message, 'warning');
+  }, [showToast]);
+
+  const showInfoToast = useCallback((message: string) => {
+    showToast('Information', message, 'info');
+  }, [showToast]);
+
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ 
+      showToast, 
+      showSuccessToast, 
+      showErrorToast, 
+      showWarningToast, 
+      showInfoToast 
+    }}>
       {children}
       <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md mx-auto pointer-events-none px-4">
         {toasts.map(toast => (
@@ -52,9 +80,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               }
             `}
           >
-            <div className="flex items-center justify-center text-center font-medium">
-              {toast.message}
-            </div>
+            <div className="font-semibold">{toast.title}</div>
+            <div className="text-sm opacity-90">{toast.message}</div>
           </div>
         ))}
       </div>

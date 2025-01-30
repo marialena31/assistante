@@ -1,7 +1,18 @@
 openapi: 3.0.0
 info:
   title: Maria-Lena Pietri Portfolio API
-  description: API documentation for Maria-Lena Pietri's portfolio website
+  description: |
+    API documentation for Maria-Lena Pietri's portfolio website.
+    
+    Important Notes:
+    - All database tables are in the 'api' schema for security
+    - The schema is configured in the Supabase client options
+    - Database operations must use proper typing with the Database type
+    - Authentication uses @supabase/ssr with PKCE flow
+    - All server-side code MUST use getUser() for token validation
+    - NEVER use getSession() in server-side code
+    - Only @marialena-pietri.fr email domains are allowed
+    - All protected routes require valid authentication
   version: 1.0.0
   contact:
     name: Maria-Lena Pietri
@@ -15,24 +26,24 @@ servers:
 
 components:
   securitySchemes:
-    bearerAuth:
+    SupabaseAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    SupabaseAuth:
-      type: apiKey
-      in: cookie
-      name: sb-access-token
-      description: Supabase session cookie for authentication
-    
+      description: |
+        Supabase JWT token. Server-side validation is done using getUser().
+        NEVER use getSession() in server-side code.
+
   schemas:
     Error:
       type: object
       properties:
         message:
           type: string
-        status:
-          type: integer
+          description: Error message
+        code:
+          type: string
+          description: Error code
 
     Content:
       type: object
@@ -90,10 +101,6 @@ components:
 
     BlogPost:
       type: object
-      required:
-        - title
-        - slug
-        - content
       properties:
         id:
           type: string
@@ -102,29 +109,32 @@ components:
           type: string
         slug:
           type: string
+        content:
+          type: string
         excerpt:
           type: string
           nullable: true
-        content:
-          type: string
         featured_image:
           type: string
           nullable: true
-          description: Filename only, not full path
         status:
           type: string
-          enum: [draft, published, scheduled]
-          default: draft
+          enum: [draft, published]
+        author:
+          type: string
+          format: uuid
+          nullable: true
+          description: UUID reference to auth.users(id)
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        author:
-          type: string
-          format: uuid
-          nullable: true
         seo:
           type: object
           nullable: true
@@ -139,11 +149,14 @@ components:
               type: array
               items:
                 type: string
-              nullable: true
         categories:
           type: array
           items:
             $ref: '#/components/schemas/BlogCategory'
+        blog_posts_categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogPostCategory'
 
     BlogCategory:
       type: object
@@ -178,29 +191,46 @@ components:
       properties:
         id:
           type: string
+          format: uuid
         email:
           type: string
           format: email
+        is_active:
+          type: boolean
+          default: true
+        source:
+          type: string
+          enum: [modal, footer]
+          description: Source of the subscription (modal popup or footer form)
+        has_promo:
+          type: boolean
+          description: Whether this subscription is eligible for promo code
+        promo_code:
+          type: string
+          description: Unique promo code if subscription came from modal
         created_at:
           type: string
           format: date-time
-        is_deleted:
-          type: boolean
-        categories:
-          type: array
-          items:
-            type: string
-        promo_code_used:
-          type: boolean
-        last_modal_shown:
-          type: string
-          format: date-time
       required:
-        - id
         - email
-        - created_at
-        - is_deleted
-        - categories
+        - source
+        - has_promo
+
+    NewsletterSubscriptionInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        source:
+          type: string
+          enum: [modal, footer]
+        has_promo:
+          type: boolean
+      required:
+        - email
+        - source
+        - has_promo
 
     AppointmentSettings:
       type: object
@@ -342,121 +372,244 @@ components:
           type: string
           format: date-time
 
+    TimeSlot:
+      type: object
+      properties:
+        start:
+          type: string
+          format: time
+        end:
+          type: string
+          format: time
+        available:
+          type: boolean
+
+    AppointmentCreate:
+      type: object
+      required:
+        - first_name
+        - last_name
+        - company_name
+        - email
+        - purpose_id
+        - appointment_type
+        - appointment_date
+        - duration_minutes
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        purpose_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          maxLength: 2000
+        appointment_type:
+          type: string
+          enum: [phone, video, in_person]
+        appointment_date:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        reminders_enabled:
+          type: boolean
+
+    AppointmentUpdate:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company_name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        purpose_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          maxLength: 2000
+        appointment_type:
+          type: string
+          enum: [phone, video, in_person]
+        appointment_date:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        reminders_enabled:
+          type: boolean
+        status:
+          type: string
+          enum: [confirmed, cancelled, modified]
+
 paths:
   /auth-mlp2024/signin:
     post:
-      summary: Sign in to admin interface
-      description: Authenticate user with email and password. Only @marialena-pietri.fr emails are allowed.
+      summary: Sign in with email and password
+      description: |
+        Authenticate user with email and password.
+        Only @marialena-pietri.fr email domains are allowed.
+        Uses PKCE flow for enhanced security.
+      tags:
+        - Authentication
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
                 email:
                   type: string
                   format: email
+                  pattern: '@marialena-pietri.fr$'
                 password:
                   type: string
                   format: password
       responses:
         '200':
           description: Successfully authenticated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  user:
-                    type: object
-                  session:
-                    type: object
         '401':
-          description: Authentication failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Invalid credentials
         '403':
           description: Not an authorized email domain
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /auth-mlp2024/register:
     post:
-      summary: Register new admin user
-      description: Register a new admin user. Only @marialena-pietri.fr emails are allowed.
+      summary: Register new user
+      description: |
+        Register a new user account.
+        Only @marialena-pietri.fr email domains are allowed.
+        Uses PKCE flow for enhanced security.
+      tags:
+        - Authentication
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
                 email:
                   type: string
                   format: email
+                  pattern: '@marialena-pietri.fr$'
                 password:
                   type: string
                   format: password
       responses:
-        '201':
-          description: User successfully created
+        '200':
+          description: Successfully registered
         '400':
           description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not an authorized email domain
+        '409':
+          description: Email already exists
 
   /auth-mlp2024/reset:
     post:
-      summary: Reset password
-      description: Send password reset email
+      summary: Request password reset
+      description: |
+        Request a password reset email.
+        Only @marialena-pietri.fr email domains are allowed.
+      tags:
+        - Authentication
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
               properties:
                 email:
                   type: string
                   format: email
+                  pattern: '@marialena-pietri.fr$'
       responses:
         '200':
           description: Reset email sent
         '404':
           description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+        '403':
+          description: Not an authorized email domain
+
+  /auth-mlp2024/callback:
+    get:
+      summary: Auth callback handler
+      description: |
+        Handle authentication callbacks (email confirmation, password reset).
+        Uses PKCE flow and verifies session with getUser().
+      tags:
+        - Authentication
+      parameters:
+        - in: query
+          name: token_hash
+          schema:
+            type: string
+          description: Authentication token hash
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [signup, recovery]
+          description: Callback type
+        - in: query
+          name: returnUrl
+          schema:
+            type: string
+          description: URL to redirect after successful auth
+      responses:
+        '302':
+          description: Redirect to appropriate page
+        '400':
+          description: Invalid token
 
   /secure-dashboard-mlp2024:
     get:
       summary: Admin dashboard
-      description: Access the admin dashboard
+      description: |
+        Access admin dashboard.
+        Protected by middleware using getUser() verification.
+      tags:
+        - Admin
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       responses:
         '200':
-          description: Dashboard rendered successfully
+          description: Dashboard rendered
         '401':
           description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '403':
           description: Not authorized (non-admin user)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
 
   /contents/{slug}:
     get:
@@ -480,7 +633,7 @@ paths:
     put:
       summary: Update content
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       parameters:
         - name: slug
           in: path
@@ -544,7 +697,7 @@ paths:
     post:
       summary: Create post
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       requestBody:
         required: true
         content:
@@ -580,7 +733,7 @@ paths:
     put:
       summary: Update post
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       parameters:
         - name: id
           in: path
@@ -605,7 +758,7 @@ paths:
     delete:
       summary: Delete post
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       parameters:
         - name: id
           in: path
@@ -643,7 +796,7 @@ paths:
       summary: Import blog posts with categories
       description: Import multiple blog posts. Categories will be automatically created if they don't exist.
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       requestBody:
         required: true
         content:
@@ -733,24 +886,13 @@ paths:
   /api/newsletter/subscribe:
     post:
       summary: Subscribe to newsletter
-      tags:
-        - Newsletter
+      description: Subscribe to newsletter with optional promo code for modal subscriptions
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                categories:
-                  type: array
-                  items:
-                    type: string
-              required:
-                - email
+              $ref: '#/components/schemas/NewsletterSubscriptionInput'
       responses:
         '200':
           description: Successfully subscribed
@@ -759,19 +901,25 @@ paths:
               schema:
                 type: object
                 properties:
-                  id:
+                  success:
+                    type: boolean
+                  message:
                     type: string
-                  email:
+                  promo_code:
                     type: string
-                  created_at:
-                    type: string
-                    format: date-time
+                    description: Promo code if subscription was from modal
         '400':
-          description: Invalid email
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '409':
           description: Email already subscribed
-        '500':
-          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /api/newsletter/unsubscribe:
     post:
@@ -804,7 +952,7 @@ paths:
       tags:
         - Newsletter
       security:
-        - bearerAuth: []
+        - SupabaseAuth: []
       responses:
         '200':
           description: List of subscriptions
@@ -840,46 +988,215 @@ paths:
 
   /appointments/settings:
     get:
-      summary: Get appointment system settings
+      summary: Get appointment settings
       tags:
         - Appointments
+      security:
+        - SupabaseAuth: []
       responses:
         '200':
-          description: Success
+          description: Appointment settings retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AppointmentSettings'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update appointment settings
+      tags:
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentSettings'
+      responses:
+        '200':
+          description: Appointment settings updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentSettings'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /appointments/durations:
     get:
       summary: Get available appointment durations
       tags:
         - Appointments
+      security:
+        - SupabaseAuth: []
       responses:
         '200':
-          description: Success
+          description: List of available appointment durations
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/AppointmentDuration'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create new appointment duration
+      tags:
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentDuration'
+      responses:
+        '201':
+          description: Appointment duration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentDuration'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update appointment duration
+      tags:
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentDuration'
+      responses:
+        '200':
+          description: Appointment duration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentDuration'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete appointment duration
+      tags:
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      responses:
+        '204':
+          description: Appointment duration deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Appointment duration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /appointments/purposes:
     get:
       summary: Get available appointment purposes
       tags:
         - Appointments
+      security:
+        - SupabaseAuth: []
       responses:
         '200':
-          description: Success
+          description: List of available appointment purposes
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/AppointmentPurpose'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create new appointment purpose
+      tags:
+        - Appointments
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentPurpose'
+      responses:
+        '201':
+          description: Appointment purpose created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppointmentPurpose'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /appointments/availability:
     get:
@@ -909,25 +1226,135 @@ paths:
                   $ref: '#/components/schemas/AvailabilitySlot'
 
   /appointments:
+    get:
+      summary: Get all appointments
+      security:
+        - SupabaseAuth: []
+      responses:
+        '200':
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     post:
-      summary: Create a new appointment
-      tags:
-        - Appointments
+      summary: Create new appointment
+      security:
+        - SupabaseAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Appointment'
+              $ref: '#/components/schemas/AppointmentCreate'
       responses:
-        '200':
-          description: Success
+        '201':
+          description: Appointment created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Appointment'
         '400':
-          description: Invalid input
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /appointments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get appointment by ID
+      security:
+        - SupabaseAuth: []
+      responses:
+        '200':
+          description: Appointment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update appointment
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppointmentUpdate'
+      responses:
+        '200':
+          description: Appointment updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Appointment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete appointment
+      security:
+        - SupabaseAuth: []
+      responses:
+        '204':
+          description: Appointment deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Appointment not found
           content:
             application/json:
               schema:
@@ -1047,3 +1474,119 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AvailabilitySlot'
+
+  /blog:
+    get:
+      summary: List all blog posts
+      security:
+        - SupabaseAuth: []
+      responses:
+        '200':
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BlogPost'
+        '401':
+          description: Unauthorized
+
+    post:
+      summary: Create a new blog post
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+      responses:
+        '201':
+          description: Blog post created
+        '401':
+          description: Unauthorized
+        '422':
+          description: Validation error
+
+  /blog/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      summary: Get a blog post by ID
+      security:
+        - SupabaseAuth: []
+      responses:
+        '200':
+          description: Blog post found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+        '404':
+          description: Blog post not found
+
+    put:
+      summary: Update a blog post
+      security:
+        - SupabaseAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPost'
+      responses:
+        '200':
+          description: Blog post updated
+        '401':
+          description: Unauthorized
+        '404':
+          description: Blog post not found
+
+    delete:
+      summary: Delete a blog post
+      security:
+        - SupabaseAuth: []
+      responses:
+        '204':
+          description: Blog post deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Blog post not found
+
+  /appointments/available-slots:
+    get:
+      summary: Get available time slots for a specific date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of available time slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSlot'
+        '400':
+          description: Invalid date format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+security:
+  - SupabaseAuth: []

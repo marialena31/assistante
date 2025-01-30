@@ -17,6 +17,11 @@ export default function Layout({ children, title = 'Assistant Portfolio', descri
   const isAdminPage = router.pathname.startsWith('/secure-dashboard-mlp2024');
   const isAuthPage = router.pathname.startsWith('/auth-mlp2024');
 
+  // If it's an admin page, don't render the standard layout
+  if (isAdminPage) {
+    return <>{children}</>;
+  }
+
   return (
     <>
       <Head>
@@ -31,11 +36,11 @@ export default function Layout({ children, title = 'Assistant Portfolio', descri
         <link rel="manifest" href="/site.webmanifest" />
       </Head>
       <div className="min-h-screen flex flex-col animate-fade-in">
-        {!isAdminPage && !isAuthPage && <Navbar />}
-        <main className={`flex-grow ${!isAdminPage && !isAuthPage ? 'pt-20' : ''} animate-slide-up`}>
+        {!isAuthPage && <Navbar />}
+        <main className={`flex-grow ${!isAuthPage ? 'pt-20' : ''} animate-slide-up`}>
           {children}
         </main>
-        {!isAdminPage && !isAuthPage && <Footer />}
+        {!isAuthPage && <Footer />}
       </div>
       <CookieConsent />
     </>

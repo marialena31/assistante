@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { SECURE_ROUTES } from '../../config/secureRoutes';
+import { SECURE_ROUTES, isAdminPath } from '../../config/secureRoutes';
 import { createBrowserClient } from '@supabase/ssr';
 import Image from 'next/legacy/image';
 
 export default function Navbar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAdminNav, setShowAdminNav] = useState(false);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,19 +20,27 @@ export default function Navbar() {
     checkUser();
   }, []);
 
+  useEffect(() => {
+    setShowAdminNav(isAuthenticated && isAdminPath(router.pathname));
+  }, [isAuthenticated, router.pathname]);
+
   const checkUser = async () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error) throw error;
-      setIsAdmin(!!session?.user);
+      setIsAuthenticated(!!session?.user);
     } catch (error) {
       console.error('Error checking user session:', error);
     }
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push(SECURE_ROUTES.SIGNIN);
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const links = [
@@ -43,13 +52,6 @@ export default function Navbar() {
     { href: '/rendez-vous', label: 'Rendez-vous' },
     { href: '/about', label: 'À propos' },
     { href: '/contact', label: 'Contact' },
-  ];
-
-  const adminLinks = [
-    { href: SECURE_ROUTES.ADMIN, label: 'Dashboard' },
-    { href: '/secure-dashboard-mlp2024/blog', label: 'Blog' },
-    { href: '/secure-dashboard-mlp2024/appointments', label: 'Rendez-vous' },
-    { href: '/secure-dashboard-mlp2024/newsletter', label: 'Newsletter' },
   ];
 
   if (router.pathname.startsWith('/auth-mlp2024')) return null;
@@ -84,25 +86,24 @@ export default function Navbar() {
                   {label}
                 </Link>
               ))}
+              {isAuthenticated ? (
+                <Link
+                  href={SECURE_ROUTES.ADMIN}
+                  className={`${
+                    isAdminPath(router.pathname)
+                      ? 'bg-primary text-white'
+                      : 'text-gray-500 hover:text-gray-700'
+                  } inline-flex items-center px-4 py-2 rounded-md text-sm font-medium`}
+                >
+                  Administration
+                </Link>
+              ) : (null)}
             </div>
           </div>
 
           <div className="flex items-center">
-            {isAdmin && (
+            {showAdminNav && (
               <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
-                {adminLinks.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`${
-                      router.pathname.startsWith(href)
-                        ? 'border-primary text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
-                  >
-                    {label}
-                  </Link>
-                ))}
                 <button
                   onClick={handleLogout}
                   className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
@@ -173,29 +174,24 @@ export default function Navbar() {
                 {label}
               </Link>
             ))}
-
-            {isAdmin && (
-              <>
-                {adminLinks.map(({ href, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`${
-                      router.pathname.startsWith(href)
-                        ? 'bg-primary/5 border-primary text-primary'
-                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-                  >
-                    {label}
-                  </Link>
-                ))}
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-                >
-                  Déconnexion
-                </button>
-              </>
+            {isAuthenticated ? (
+              <Link
+                href={SECURE_ROUTES.ADMIN}
+                className={`${
+                  isAdminPath(router.pathname)
+                    ? 'bg-primary/5 border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+                } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
+              >
+                Administration
+              </Link>
+            ) : (
+              <Link
+                href={SECURE_ROUTES.SIGNIN}
+                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              >
+                Se connecter
+              </Link>
             )}
           </div>
         </div>

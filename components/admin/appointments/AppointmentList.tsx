@@ -16,33 +16,35 @@ export default function AppointmentList() {
   });
 
   const handleStatusChange = async (id: string, newStatus: Appointment['status']) => {
+    const toastCallback = (message: string, type: 'success' | 'error') => {
+      showToast('Notification', message, type);
+    };
+
     const success = await mutateData({
       table: 'appointments',
       action: 'UPDATE',
       data: { status: newStatus },
       filter: { id }
-    });
+    }, toastCallback, mutate);
 
     if (success) {
-      showToast('Statut mis à jour avec succès', 'success');
-      mutate();
-    } else {
-      showToast('Erreur lors de la mise à jour du statut', 'error');
+      toastCallback('Statut mis à jour avec succès', 'success');
     }
   };
 
   const handleDelete = async (id: string) => {
+    const toastCallback = (message: string, type: 'success' | 'error') => {
+      showToast('Notification', message, type);
+    };
+
     const success = await mutateData({
       table: 'appointments',
       action: 'DELETE',
       filter: { id }
-    });
+    }, toastCallback, mutate);
 
     if (success) {
-      showToast('Rendez-vous supprimé avec succès', 'success');
-      mutate();
-    } else {
-      showToast('Erreur lors de la suppression', 'error');
+      toastCallback('Rendez-vous supprimé avec succès', 'success');
     }
   };
 

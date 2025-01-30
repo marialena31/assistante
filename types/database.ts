@@ -33,12 +33,15 @@ export interface BlogPostCategory {
 export interface BlogPost {
   id: number
   title: string
-  content: string
-  excerpt: string
   slug: string
+  content: string
+  excerpt: string | null
   featured_image: string | null
-  author: string | null
+  author: string | null  // UUID reference to auth.users(id)
   status: 'draft' | 'published' | 'scheduled'
+  published_at: string | null
+  seo_title: string | null
+  seo_description: string | null
   created_at: string
   updated_at: string
   categories?: BlogCategory[]

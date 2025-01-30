@@ -22,6 +22,17 @@ const settingsSchema = z.object({
   sms_reminder_template: z.string().optional(),
 });
 
+const defaultSettings = {
+  title: 'Rendez-vous de consultation',
+  description: 'Consultation personnalisée',
+  photo_url: '',
+  google_calendar_sync_url: '',
+  email_reminder_enabled: false,
+  sms_reminder_enabled: false,
+  email_reminder_template: '',
+  sms_reminder_template: '',
+};
+
 export default function AppointmentSettingsForm() {
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
@@ -33,6 +44,7 @@ export default function AppointmentSettingsForm() {
     formState: { errors },
   } = useForm<AppointmentSettings>({
     resolver: zodResolver(settingsSchema),
+    defaultValues: defaultSettings,
   });
 
   useEffect(() => {
@@ -45,12 +57,26 @@ export default function AppointmentSettingsForm() {
         .schema('api')
         .from('appointment_settings')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      if (data) reset(data);
-    } catch (error) {
-      showToast('Erreur lors du chargement des paramètres', 'error');
+      
+      if (data) {
+        reset(data);
+      } else {
+        // If no settings exist, create default settings
+        const { data: newSettings, error: insertError } = await supabase
+          .schema('api')
+          .from('appointment_settings')
+          .insert([defaultSettings])
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        if (newSettings) reset(newSettings);
+      }
+    } catch (error: any) {
+      showToast('Erreur', error.message || 'Une erreur est survenue', 'error');
     } finally {
       setLoading(false);
     }
@@ -58,16 +84,18 @@ export default function AppointmentSettingsForm() {
 
   const onSubmit = async (data: AppointmentSettings) => {
     try {
+      setLoading(true);
       const { error } = await supabase
         .schema('api')
         .from('appointment_settings')
-        .update(data)
-        .eq('id', data.id);
+        .upsert(data);
 
       if (error) throw error;
-      showToast('Paramètres mis à jour avec succès', 'success');
-    } catch (error) {
-      showToast('Erreur lors de la mise à jour des paramètres', 'error');
+      showToast('Succès', 'Paramètres mis à jour avec succès', 'success');
+    } catch (error: any) {
+      showToast('Erreur', error.message || 'Une erreur est survenue', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 

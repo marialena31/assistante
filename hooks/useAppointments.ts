@@ -23,7 +23,7 @@ export function useAppointments() {
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { showToast } = useToast();
+  const { showErrorToast } = useToast();
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -37,9 +37,9 @@ export function useAppointments() {
       setSettings(data);
     } catch (err) {
       setError(err as Error);
-      showToast('Erreur lors du chargement des paramètres', 'error');
+      showErrorToast('Erreur lors du chargement des paramètres');
     }
-  }, [showToast]);
+  }, [showErrorToast]);
 
   const fetchDurations = useCallback(async () => {
     try {
@@ -54,9 +54,9 @@ export function useAppointments() {
       setDurations(data);
     } catch (err) {
       setError(err as Error);
-      showToast('Erreur lors du chargement des durées', 'error');
+      showErrorToast('Erreur lors du chargement des durées');
     }
-  }, [showToast]);
+  }, [showErrorToast]);
 
   const fetchPurposes = useCallback(async () => {
     try {
@@ -71,9 +71,9 @@ export function useAppointments() {
       setPurposes(data);
     } catch (err) {
       setError(err as Error);
-      showToast('Erreur lors du chargement des motifs', 'error');
+      showErrorToast('Erreur lors du chargement des motifs');
     }
-  }, [showToast]);
+  }, [showErrorToast]);
 
   const fetchAvailability = useCallback(async (date: string, duration: number) => {
     try {
@@ -143,9 +143,9 @@ export function useAppointments() {
       setAvailableSlots(timeSlots);
     } catch (err) {
       setError(err as Error);
-      showToast('Erreur lors du chargement des disponibilités', 'error');
+      showErrorToast('Erreur lors du chargement des disponibilités');
     }
-  }, [showToast]);
+  }, [showErrorToast]);
 
   const createAppointment = useCallback(async (formData: AppointmentFormData) => {
     try {
@@ -158,14 +158,14 @@ export function useAppointments() {
 
       if (error) throw error;
 
-      showToast('Rendez-vous créé avec succès', 'success');
+      showErrorToast('Rendez-vous créé avec succès');
       return data as Appointment;
     } catch (err) {
       setError(err as Error);
-      showToast('Erreur lors de la création du rendez-vous', 'error');
+      showErrorToast('Erreur lors de la création du rendez-vous');
       throw err;
     }
-  }, [showToast]);
+  }, [showErrorToast]);
 
   const initialize = useCallback(async () => {
     setLoading(true);

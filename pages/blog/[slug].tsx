@@ -1,7 +1,7 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import Layout from '../../components/layout/Layout';
-import Image from 'next/legacy/image';
+import Image from 'next/image';
 import { formatDate } from '../../utils/date';
 import type { BlogPost } from '../../types/blog';
 import Link from 'next/link';
@@ -57,9 +57,13 @@ const BlogPostPage = ({ post }: BlogPostPageProps) => {
               <Image
                 src={post.featured_image.startsWith('http') ? post.featured_image : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/blog-images/${post.featured_image}`}
                 alt={post.title}
-                layout="fill"
-                objectFit="cover"
-                className="rounded-lg"
+                fill
+                sizes="(max-width: 768px) 100vw,
+                      (max-width: 1200px) 50vw,
+                      33vw"
+                style={{
+                  objectFit: 'cover',
+                }}
                 priority
               />
             </div>
@@ -147,7 +151,18 @@ export const getStaticProps: GetStaticProps<BlogPostPageProps> = async ({ params
           ...post,
           categories: post.blog_posts_categories
             ? post.blog_posts_categories.map((cat: any) => cat.blog_categories)
-            : []
+            : [],
+          blog_posts_categories: post.blog_posts_categories
+            ? post.blog_posts_categories.map((cat: any) => ({
+                post_id: post.id,
+                category_id: cat.blog_categories.id
+              }))
+            : [],
+          seo: post.seo || {
+            title: null,
+            description: null,
+            keywords: []
+          }
         }
       },
       revalidate: 60

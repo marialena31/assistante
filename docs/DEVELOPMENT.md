@@ -11,23 +11,35 @@
    - All content MUST be managed through Supabase database
    - Use ONLY the `api` schema, NOT the `public` schema
    - All content updates MUST be done through the admin interface
-   - When using Supabase client, ALWAYS use the schema method:
+   - When creating a Supabase client, ALWAYS configure the schema in the client options:
      ```typescript
-     // CORRECT way to use Supabase client with API schema:
+     // CORRECT way to configure Supabase client with API schema:
+     const supabase = createServerClient<Database>(
+       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+       {
+         db: {
+           schema: 'api'
+         }
+       }
+     );
+
+     // Then you can use it directly without schema method:
      const { data, error } = await supabase
-       .schema('api')
        .from('table_name')
        .select()
 
      // INCORRECT - Don't use schema in table name:
      .from('api.table_name')  // This will fail!
+     ```
 
-     // INCORRECT - Don't skip schema:
-     .from('table_name')  // This will use public schema!
+   - Always import the Database type from your local types:
+     ```typescript
+     import type { Database } from '../types/database';
      ```
 
 3. **Authentication**
-   - Use the latest `@supabase/ssr` package (NOT the deprecated auth-helpers)
+   - Use the latest `@supabase/ssr` package with PKCE flow
    - Admin connection is managed by Supabase auth
    - Only `@marialena-pietri.fr` email domains are allowed
    - Secure paths:
@@ -36,9 +48,97 @@
      - Reset Password: `/auth-mlp2024/reset`
      - Auth Callback: `/auth-mlp2024/callback`
      - Admin Dashboard: `/secure-dashboard-mlp2024`
+   
+   **Important Security Notes:**
+   - Always use `supabase.auth.getUser()` to verify authentication, NEVER use `getSession()` on the server side
+   - The server gets user session from cookies which can be spoofed, so always verify with `getUser()`
+   - `getUser()` is safe because it sends a request to Supabase Auth server every time to revalidate the Auth token
+   
+   Authentication Flow:
+   ```typescript
+   // Client configuration
+   const supabaseClient = createBrowserClient(
+     process.env.NEXT_PUBLIC_SUPABASE_URL!,
+     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+     {
+       auth: {
+         flowType: 'pkce',
+         detectSessionInUrl: true,
+         persistSession: true,
+         autoRefreshToken: true,
+       },
+       db: {
+         schema: 'api'
+       }
+     }
+   );
+
+   // Server-side auth verification (in middleware or server components)
+   const { data: { user }, error } = await supabase.auth.getUser();
+   if (!user?.email?.endsWith('@marialena-pietri.fr')) {
+     // Handle unauthorized access
+   }
+
+   // Sign in with email/password
+   const { error } = await supabase.auth.signInWithPassword({
+     email,
+     password
+   });
+
+   // Reset password
+   const { error } = await supabase.auth.resetPasswordForEmail(email, {
+     redirectTo: `${window.location.origin}/auth-mlp2024/callback?type=recovery`
+   });
+
+   // Get current session
+   const { data: { session } } = await supabase.auth.getSession();
+   ```
+
+   Password Requirements:
+   - Minimum 8 characters
+   - At least one uppercase letter
+   - At least one lowercase letter
+   - At least one number
+   - At least one special character
+
+   Password Components:
+   ```typescript
+   // Validate password
+   import { validatePassword } from '../../utils/auth/passwordValidation';
+   const validation = validatePassword(password);
+   if (!validation.isValid) {
+     showErrorToast(validation.message);
+   }
+
+   // Show password strength meter
+   import { PasswordStrengthMeter } from '../../components/auth/PasswordStrengthMeter';
+   <PasswordStrengthMeter password={password} />
+   ```
+
+   Important Notes:
+   - Always use PKCE flow for authentication
+   - Session is automatically persisted in cookies
+   - Email domain validation is enforced on both client and server
+   - Use Toast component for auth feedback messages
+   - Always validate passwords using the validatePassword utility
+   - Use PasswordStrengthMeter component for visual feedback
 
 4. **User Interface**
    - Use Toast component for displaying messages to users
+   - Toast Component Usage:
+     ```typescript
+     // Import the hook
+     import { useToast } from '../components/ui/Toast';
+
+     // Use the helper methods in your component
+     const { showSuccessToast, showErrorToast, showWarningToast, showInfoToast } = useToast();
+
+     // Display toasts
+     showSuccessToast('Operation completed successfully');  // Green toast
+     showErrorToast('An error occurred');                  // Red toast
+     showWarningToast('Please be careful');               // Yellow toast
+     showInfoToast('Here is some information');           // Blue toast
+     ```
    - DO NOT modify CSS configuration in next.config.js
 
 ## Code Style and Best Practices
@@ -606,6 +706,24 @@ The blog system uses the following tables in the `api` schema:
    );
    ```
 
+4. **Tags Table**
+   ```sql
+   CREATE TABLE api.blog_tags (
+     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+     name TEXT NOT NULL,
+     slug TEXT UNIQUE NOT NULL
+   );
+   ```
+
+5. **Post Tags Junction Table**
+   ```sql
+   CREATE TABLE api.blog_posts_tags (
+     post_id UUID REFERENCES api.blog_posts(id) ON DELETE CASCADE,
+     tag_id UUID REFERENCES api.blog_tags(id) ON DELETE CASCADE,
+     PRIMARY KEY (post_id, tag_id)
+   );
+   ```
+
 ### Image Handling
 
 1. **Storage**
@@ -630,6 +748,56 @@ The blog system uses the following tables in the `api` schema:
    - Static site generation with ISR
    - Image optimization
    - Proper caching headers
+
+## Configuration requise
+
+### Variables d'environnement
+
+Créez un fichier `.env.local` à la racine du projet avec les variables suivantes :
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=votre_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_clé_anon
+NEXT_PUBLIC_TINYMCE_API_KEY=votre_clé_tinymce
+```
+
+Pour obtenir une clé TinyMCE :
+1. Créez un compte sur [TinyMCE Cloud](https://www.tiny.cloud/)
+2. Créez un nouveau projet
+3. Copiez la clé API dans votre fichier `.env.local`
+
+### Gestion des articles
+
+#### Import JSON
+
+Le système permet d'importer des articles via un fichier JSON. Le fichier doit respecter le format suivant :
+
+```json
+[
+  {
+    "title": "Titre de l'article",
+    "content": "Contenu HTML de l'article",
+    "slug": "url-de-l-article",
+    "categories": [1, 2] // IDs des catégories
+  }
+]
+```
+
+Limitations :
+- Taille maximale du fichier : 1Mo
+- Extension requise : .json
+- Les articles sont importés en statut "brouillon"
+- Les catégories doivent exister dans la base de données
+
+#### Images
+
+Les images peuvent être téléchargées de deux manières :
+1. Image à la une : via le composant de drag & drop (max 1Mo, formats : JPG, PNG, WEBP)
+2. Images dans le contenu : via l'éditeur TinyMCE (intégré au composant)
+
+Les images sont stockées dans le bucket Supabase `public` dans les dossiers suivants :
+- Images à la une : `blog/featured/`
+- Images de contenu : `blog/`
 
 ## Image Components
 
@@ -751,3 +919,160 @@ All secure routes are protected by middleware that:
 - Auth middleware protects all secure routes
 - Session validation is done server-side
 - Email domain restrictions are enforced at all levels
+
+## Code Style and Best Practices
+
+### Authentication
+
+1. **Supabase SSR**
+   - Use `@supabase/ssr` package directly
+   - No custom auth functions needed
+   - Configure with PKCE flow and cookie-based auth
+   - Example:
+     ```typescript
+     import { createBrowserClient } from '@supabase/ssr'
+     
+     const supabase = createBrowserClient(
+       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+       {
+         auth: {
+           flowType: 'pkce',
+           detectSessionInUrl: true,
+           persistSession: true,
+           autoRefreshToken: true,
+         },
+         db: {
+           schema: 'api'
+         }
+       }
+     )
+     ```
+
+2. **Middleware**
+   - Uses `createServerClient` from `@supabase/ssr`
+   - Handles session refresh and auth redirects
+   - Protects secure routes
+   - Only allows `@marialena-pietri.fr` emails
+
+3. **Routes**
+   - `/auth-mlp2024/signin` - Login
+   - `/auth-mlp2024/register` - Register
+   - `/auth-mlp2024/reset` - Reset Password
+   - `/auth-mlp2024/callback` - Auth Callback
+   - `/secure-dashboard-mlp2024` - Admin Dashboard
+
+### Image Components
+
+- Always use the legacy Image component from Next.js:
+  ```typescript
+  import Image from 'next/legacy/image'
+  ```
+  This avoids fetchPriority warnings and compatibility issues with the new Image component.
+
+### Client-Side Authentication
+For client-side authentication, you can use either:
+- `getSession()` - Reads from localStorage, faster but may be stale
+- `getUser()` - Makes an API call, always up-to-date but slower
+
+```typescript
+// Using getSession (preferred for client-side)
+const { data: { session } } = await supabase.auth.getSession()
+if (session?.user) {
+  // User is authenticated
+}
+
+// Using getUser (when you need guaranteed fresh data)
+const { data: { user } } = await supabase.auth.getUser()
+if (user) {
+  // User is authenticated
+}
+```
+
+### Server-Side Authentication
+For server-side components and API routes:
+- `getSession()` - Reads from cookies, faster but requires proper cookie setup
+- `getUser()` - Makes an API call, slower but guarantees token validity
+
+```typescript
+// In Server Components/API Routes
+const supabase = createServerClient(...)
+
+// Using getSession (preferred for performance)
+const { data: { session } } = await supabase.auth.getSession()
+if (session?.user) {
+  // User is authenticated
+}
+
+// Using getUser (when you need to verify token validity)
+const { data: { user } } = await supabase.auth.getUser()
+if (user) {
+  // User is authenticated
+}
+```
+
+### Middleware Authentication
+In middleware, we use a hybrid approach:
+1. Try `getSession()` first for performance
+2. Fall back to `getUser()` for secure routes or when session is missing
+
+```typescript
+// In middleware.ts
+const { data: { session } } = await supabase.auth.getSession()
+const user = session?.user
+
+// Verify with getUser if needed
+if (needsVerification) {
+  const { data: { user: verifiedUser } } = await supabase.auth.getUser()
+  // Handle verification
+}
+```
+
+### Email Domain Restrictions
+All authenticated routes require an @marialena-pietri.fr email domain. This is enforced in:
+1. Client-side signup/login forms
+2. Server-side API routes
+3. Middleware for protected routes
+
+### Authentication Flow
+1. User signs in/up with @marialena-pietri.fr email
+2. Email confirmation uses PKCE flow for enhanced security
+3. Callback handler exchanges token and sets session
+4. Middleware refreshes tokens and enforces domain restrictions
+
+### Protected Routes
+The following routes require authentication:
+- `/secure-dashboard-mlp2024/*` - Admin dashboard and related pages
+- `/api/*` - All API routes in the api schema
+
+### Auth-Related Files
+- `utils/supabase/auth.ts` - Client-side auth utilities
+- `utils/supabase/server.ts` - Server-side Supabase client
+- `utils/supabase/middleware.ts` - Auth middleware
+- `pages/auth-mlp2024/*` - Auth-related pages
+
+## Database Access
+All database access must use the 'api' schema:
+```typescript
+const supabase = createClient({
+  db: {
+    schema: 'api'
+  }
+})
+```
+
+## Error Handling
+Use the Toast component for displaying auth-related messages:
+```typescript
+import { useToast } from '@/components/ui/Toast'
+
+const { showErrorToast } = useToast()
+showErrorToast('Authentication failed')
+```
+
+## Environment Variables
+Required variables:
+```
+NEXT_PUBLIC_SUPABASE_URL=<project_url>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon_key>
+```

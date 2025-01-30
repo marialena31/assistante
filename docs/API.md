@@ -1,488 +1,526 @@
 # API Documentation
 
-## Overview
+## Database Schema
 
-The API is built using Supabase and follows RESTful principles. All endpoints are prefixed with `/api/v1`.
+All tables are in the `api` schema for security.
 
-## Important Notes
+### Blog Posts
 
-1. **Schema**
-   - All tables MUST be in the `api` schema
-   - The `public` schema is NOT used for security reasons
-   - All database operations must respect this configuration
-   - When using Supabase client, ALWAYS use the schema method:
-     ```typescript
-     // CORRECT way:
-     supabase
-       .schema('api')
-       .from('table_name')
-       .select()
+Table: `blog_posts`
 
-     // INCORRECT ways:
-     // DON'T use schema in table name
-     supabase.from('api.table_name')
-     // DON'T skip schema
-     supabase.from('table_name')
-     ```
+```sql
+CREATE TABLE api.blog_posts (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  content text NOT NULL,
+  excerpt text,
+  featured_image text,
+  status text NOT NULL DEFAULT 'draft',
+  author uuid REFERENCES auth.users(id),
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  seo jsonb
+);
 
-2. **Authentication**
-   - Uses the latest `@supabase/ssr` package
-   - Cookie-based authentication (NOT token-based)
-   - Only `@marialena-pietri.fr` email domains allowed
-   - All admin routes are protected
+-- RLS Policies
+ALTER TABLE api.blog_posts ENABLE ROW LEVEL SECURITY;
 
-3. **Documentation**
-   - Always check `swagger.yaml` before API modifications
-   - Update `swagger.yaml` after any API changes
-   - Keep API documentation in sync with implementation
+-- Allow read access to published posts for all users
+CREATE POLICY "Published posts are viewable by everyone" 
+ON api.blog_posts FOR SELECT 
+USING (status = 'published');
 
-## API Security
-
-All secure API routes are protected using Supabase authentication. We use a custom secure handler that:
-
-1. Verifies the user's session using `@supabase/ssr`
-2. Validates the session token
-3. Ensures the user exists and has proper permissions
-
-### Using the Secure Handler
-
-To protect an API route, wrap your handler with `createSecureHandler`:
-
-```typescript
-import { createSecureHandler } from '../../../utils/auth';
-
-export default createSecureHandler(async function handler(
-  req: NextApiRequest, 
-  res: NextApiResponse,
-  { user, supabaseAdmin } // Injected auth context
-) {
-  // Your secure API logic here
-});
+-- Allow full access to authenticated users with @marialena-pietri.fr email
+CREATE POLICY "Full access for admin users" 
+ON api.blog_posts 
+FOR ALL 
+USING (auth.jwt()->>'email' LIKE '%@marialena-pietri.fr')
+WITH CHECK (auth.jwt()->>'email' LIKE '%@marialena-pietri.fr');
 ```
 
-The secure handler provides:
-- `user`: The authenticated user object
-- `supabaseAdmin`: A Supabase client with admin privileges for database operations
+## API Routes
 
-### Protected Routes
+### Blog Management
 
-The following routes require authentication:
+All blog management routes are protected and require authentication with a valid @marialena-pietri.fr email.
 
-- `/api/admin/*` - All admin routes
-- `/api/blog/upload-image` - Image upload endpoint
-- Any other routes that modify data
+#### List Posts
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}`
+- Method: GET
+- Response: Array of blog posts
 
-### Authentication Flow
-
-1. Client sends request with Supabase session cookie
-2. Server validates session using `@supabase/ssr`
-3. If valid, handler receives authenticated user context
-4. If invalid, returns 401 Unauthorized
-
-## Authentication API
-
-Authentication is handled by Supabase using the `@supabase/ssr` package. The following endpoints are available:
-
-### Sign In
-- **Path**: `/auth-mlp2024/signin`
-- **Method**: POST
-- **Description**: Authenticate user with email and password
-- **Access**: Public
-- **Email Restriction**: Only `@marialena-pietri.fr` domains allowed
-- **Request Body**:
-  ```json
+#### Create Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/new`
+- Method: POST
+- Body:
+  ```typescript
   {
-    "email": "user@marialena-pietri.fr",
-    "password": "password"
-  }
-  ```
-- **Response**:
-  - 200: Successfully authenticated
-  - 401: Invalid credentials
-  - 403: Not an authorized email domain
-
-### Password Reset
-- **Path**: `/auth-mlp2024/reset`
-- **Method**: POST
-- **Description**: Request password reset email
-- **Access**: Public
-- **Request Body**:
-  ```json
-  {
-    "email": "user@marialena-pietri.fr"
-  }
-  ```
-- **Response**:
-  - 200: Reset email sent
-  - 404: User not found
-
-### Auth Callback
-- **Path**: `/auth-mlp2024/callback`
-- **Method**: GET
-- **Description**: Handle authentication callbacks (email confirmation, password reset)
-- **Access**: Public
-- **Query Parameters**:
-  - `token_hash`: Authentication token
-  - `type`: Callback type (signup, recovery, etc.)
-- **Response**:
-  - 302: Redirect to appropriate page
-  - 400: Invalid token
-
-### Admin Dashboard
-- **Path**: `/secure-dashboard-mlp2024`
-- **Method**: GET
-- **Description**: Access admin dashboard
-- **Access**: Authenticated users with `@marialena-pietri.fr` email
-- **Response**:
-  - 200: Dashboard rendered
-  - 401: Not authenticated
-  - 403: Not authorized (non-admin user)
-
-## API Endpoints
-
-### Content Management
-
-#### Get Content
-
-```yaml
-GET /api/v1/contents/{slug}
-Security:
-  - Public content: No auth required
-  - Protected content: Bearer token required
-  - Admin content: Admin token required
-
-Parameters:
-  - slug: string (required)
-  - schema: string (fixed to 'api')
-
-Response:
-  200:
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            title: string
-            content: object
-            type: string
-            schema: string (always 'api')
-  404:
-    description: Content not found
-```
-
-#### Update Content
-
-```yaml
-PUT /api/v1/contents/{slug}
-Security:
-  - bearerAuth: []
-
-Parameters:
-  - slug: string (required)
-  - schema: string (fixed to 'api')
-
-Request Body:
-  content:
-    application/json:
-      schema:
-        type: object
-        properties:
-          title: string
-          content: object
-          type: string
-
-Response:
-  200:
-    description: Content updated successfully
-  403:
-    description: Unauthorized
-  404:
-    description: Content not found
-```
-
-### Blog Posts API
-
-#### Image Upload
-```yaml
-POST /api/blog/upload-image
-Security:
-  - bearerAuth: []
-
-Request:
-  content:
-    multipart/form-data:
-      schema:
-        type: object
-        properties:
-          image:
-            type: string
-            format: binary
-            description: Image file (max 10MB, supported formats: jpg, png, webp)
-
-Response:
-  200:
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            filename:
-              type: string
-              description: The filename to use for referencing the image
-  400:
-    description: No image provided or invalid image
-  413:
-    description: Image too large (max 10MB)
-  500:
-    description: Server error during upload or processing
-```
-
-#### Image Processing
-- All uploaded images are automatically processed into two formats:
-  1. Thumbnail (400x300px) for list views
-  2. Full size (1200x800px) for post detail
-- Images are converted to WebP format for optimal performance
-- Images are stored in `/images/blog/` with the following naming convention:
-  - Thumbnails: `{filename}-thumbnail.webp`
-  - Full size: `{filename}.webp`
-
-#### Structure d'un Article
-
-Les articles de blog suivent la structure JSON suivante :
-
-```typescript
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string | null;
-  content: string;
-  featured_image: string | null;  // Filename only, not full path
-  status: 'draft' | 'published' | 'scheduled';
-  created_at: string;  // ISO date
-  updated_at: string;  // ISO date
-  author: string | null;
-  seo: {
-    title: string | null;
-    description: string | null;
-    keywords: string[] | null;
-  } | null;
-  categories: Array<{
-    id: string;
-    name: string;
+    title: string;
+    content: string;
     slug: string;
-    description: string | null;
-    created_at: string;  // ISO date
-    updated_at: string;  // ISO date
-  }>;
+    status: 'draft' | 'published';
+  }
+  ```
+
+#### Edit Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/[id]/edit`
+- Method: PUT
+- Parameters: `id` (post ID)
+- Body:
+  ```typescript
+  {
+    title?: string;
+    content?: string;
+    slug?: string;
+    status?: 'draft' | 'published';
+  }
+  ```
+
+#### Delete Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/[id]`
+- Method: DELETE
+- Parameters: `id` (post ID)
+
+## Newsletter Subscriptions
+
+### Table Structure
+
+```sql
+CREATE TABLE api.newsletter_subscriptions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  is_active BOOLEAN DEFAULT true,
+  source VARCHAR(10) NOT NULL CHECK (source IN ('modal', 'footer')),
+  has_promo BOOLEAN NOT NULL DEFAULT false,
+  promo_code VARCHAR(20),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Add indexes for performance
+CREATE INDEX idx_newsletter_email ON api.newsletter_subscriptions(email);
+CREATE INDEX idx_newsletter_source ON api.newsletter_subscriptions(source);
+```
+
+### Fields Description
+
+- `id`: Unique identifier for the subscription
+- `email`: Subscriber's email address (unique)
+- `is_active`: Whether the subscription is active
+- `source`: Where the subscription came from ('modal' or 'footer')
+- `has_promo`: Whether the subscription is eligible for a promo code
+- `promo_code`: Unique promo code for modal subscriptions
+- `created_at`: Timestamp of subscription
+
+### API Endpoints
+
+#### Subscribe to Newsletter
+
+```http
+POST /api/newsletter/subscribe
+```
+
+Request body:
+```json
+{
+  "email": "string",
+  "source": "modal" | "footer",
+  "has_promo": boolean
 }
 ```
 
-#### Status des Articles
-
-- `draft`: Article en cours de rédaction
-- `published`: Article publié et visible sur le site
-- `scheduled`: Article planifié pour publication future
-
-#### Notes Importantes
-
-1. Les articles sont stockés dans la table `blog_posts` du schéma `api`
-2. Les catégories sont gérées via une table de jonction `blog_posts_categories`
-3. Tous les champs marqués comme `| null` sont optionnels
-4. Les dates sont toujours au format ISO 8601
-5. Le statut d'un article détermine sa visibilité sur le site
-
-#### Import d'Articles
-
-L'interface d'administration permet d'importer plusieurs articles à la fois via un fichier JSON. Le fichier doit contenir un tableau d'articles suivant la structure ci-dessus. Exemple :
-
+Response (success):
 ```json
-[
-  {
-    "title": "Article 1",
-    "slug": "article-1",
-    "content": "Contenu...",
-    ...
-  },
-  {
-    "title": "Article 2",
-    "slug": "article-2",
-    "content": "Contenu...",
-    ...
-  }
-]
+{
+  "success": true,
+  "message": "Successfully subscribed",
+  "promo_code": "string" // Only present for modal subscriptions
+}
 ```
 
-Les champs `created_at` et `updated_at` sont automatiquement ajoutés lors de l'import.
-
-#### List Posts
-
-```yaml
-GET /api/v1/posts
-
-Parameters:
-  - page: integer (optional) - Page number
-  - limit: integer (optional) - Items per page
-  - category: string (optional) - Filter by category
-
-Response:
-  200:
-    description: Posts retrieved successfully
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            data:
-              type: array
-              items:
-                type: object
-                properties:
-                  id: string
-                  title: string
-                  excerpt: string
-                  content: string
-            pagination:
-              type: object
-              properties:
-                total: integer
-                pages: integer
-                current: integer
+Response (error):
+```json
+{
+  "success": false,
+  "message": "Error message"
+}
 ```
 
-#### Get Post
+### Promo Code Generation
 
-```yaml
-GET /api/v1/posts/{id}
+Promo codes are automatically generated for subscriptions from the modal popup. The format is:
+```
+PROMO10-XXXXYYYY
+```
+Where:
+- XXXX: Timestamp-based unique identifier
+- YYYY: Email-based unique identifier
 
-Parameters:
-  - id: string (required) - Post ID
+Each promo code is unique and can only be used once.
 
-Response:
-  200:
-    description: Post retrieved successfully
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            id: string
-            title: string
-            content: string
-  404:
-    description: Post not found
+## Data Mutation
+
+The application uses a centralized `mutateData` function for all database operations. This function is located in `hooks/useSupabaseQuery.ts` and handles all INSERT, UPDATE, and DELETE operations.
+
+#### Function Signature
+```typescript
+mutateData(
+  options: MutateOptions,
+  showToast: (message: string, type: 'success' | 'error') => void,
+  mutate: () => void
+): Promise<boolean>
 ```
 
-### Blog System
+#### Parameters
+- `options`: Configuration object for the mutation
+  - `table` (required): Name of the table to operate on
+  - `schema` (optional): The schema name (defaults to 'api')
+  - `action` (required): 'INSERT' | 'UPDATE' | 'DELETE'
+  - `data` (optional): The data to insert or update
+  - `filter` (optional): Conditions for update/delete operations
+- `showToast`: Function to display success/error messages
+- `mutate`: Function to refresh data after successful operation
+
+#### Toast Adapter Pattern
+Since the application's Toast component uses a different signature (`showToast(title, message, type)`), you need to use an adapter when calling `mutateData`:
+
+```typescript
+// Create adapter in your component
+const toastAdapter = (message: string, type: 'success' | 'error') => {
+  showToast(type === 'success' ? 'Succès' : 'Erreur', message, type);
+};
+
+// Use adapter with mutateData
+const success = await mutateData(options, toastAdapter, mutate);
+```
+
+#### Example Usage
+```typescript
+const { data, mutate } = useSupabaseQuery<YourType>({
+  table: 'your_table',
+  orderBy: { column: 'created_at', ascending: true }
+});
+
+const handleUpdate = async (id: string, newData: any) => {
+  const success = await mutateData({
+    table: 'your_table',
+    action: 'UPDATE',
+    data: newData,
+    filter: { id }
+  }, toastAdapter, mutate);
+};
+```
+
+### Best Practices
+1. Always use the `api` schema
+2. Handle loading and error states appropriately
+3. Use TypeScript interfaces for data types
+4. Show feedback to users using the Toast component
+5. Revalidate data after mutations using the `mutate` function
+
+## Realtime Subscriptions
+
+### Using the Realtime Hook
+
+The application provides a custom hook `useRealtimeSubscription` for handling Supabase realtime subscriptions. This hook must be used for all realtime data synchronization to ensure consistency and proper error handling.
+
+```typescript
+import { useRealtimeSubscription } from '../hooks/useRealtimeSubscription';
+
+// Example usage
+function MyComponent() {
+  const { data, loading, error } = useRealtimeSubscription<BlogPost>({
+    table: 'blog_posts',
+    schema: 'api', // Always use 'api' schema
+    event: '*', // or 'INSERT', 'UPDATE', 'DELETE'
+    callback: (payload) => {
+      console.log('Realtime update:', payload);
+    }
+  });
+}
+```
+
+#### Options
+
+- `table` (required): The table name to query
+- `schema` (optional): The schema name (defaults to 'api')
+- `select` (optional): The columns to select (defaults to '*')
+- `filter` (optional): An object of column-value pairs to filter by
+- `orderBy` (optional): Sorting configuration { column: string, ascending?: boolean }
+
+#### Returns
+
+- `data`: The query results (typed array)
+- `loading`: Boolean indicating if the request is in progress
+- `error`: Any error that occurred
+- `mutate`: Function to manually revalidate the data
+
+### Data Mutations
+
+For creating, updating, or deleting data, use the `mutateData` function:
+
+```typescript
+import { mutateData } from '../hooks/useSupabaseQuery';
+
+// Example: Create
+const success = await mutateData({
+  table: 'your_table',
+  action: 'INSERT',
+  data: newData
+});
+
+// Example: Update
+const success = await mutateData({
+  table: 'your_table',
+  action: 'UPDATE',
+  data: updatedData,
+  filter: { id: itemId }
+});
+
+// Example: Delete
+const success = await mutateData({
+  table: 'your_table',
+  action: 'DELETE',
+  filter: { id: itemId }
+});
+```
+
+#### Options
+
+- `table` (required): Name of the table to operate on
+- `schema` (optional): The schema name (defaults to 'api')
+- `action` (required): 'INSERT' | 'UPDATE' | 'DELETE'
+- `data` (optional): The data to insert or update
+- `filter` (optional): Conditions for update/delete operations
+
+### Best Practices
+
+1. Always use the `api` schema
+2. Handle loading and error states appropriately
+3. Use TypeScript interfaces for data types
+4. Show feedback to users using the Toast component
+5. Revalidate data after mutations using the `mutate` function
+
+### Example Components
+
+See the following components for implementation examples:
+- `components/admin/appointments/AppointmentList.tsx`
+- `components/admin/blog/PostEditor.tsx`
+
+## Database Schema
+
+### API Schema
+
+All tables must be created in the `api` schema for security:
+
+```sql
+-- Create api schema
+create schema if not exists api;
+
+-- Contents Table
+create table api.contents (
+  id uuid default uuid_generate_v4() primary key,
+  slug text not null unique,
+  title text not null,
+  content jsonb not null,
+  type text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS Policies
+alter table api.contents enable row level security;
+
+create policy "Public content is viewable by everyone"
+  on api.contents for select
+  using ( type = 'public' );
+
+create policy "Protected content is viewable by authenticated users only"
+  on api.contents for select
+  using ( type = 'protected' and auth.role() = 'authenticated' );
+
+create policy "Content is editable by admins only"
+  on api.contents for all
+  using ( auth.role() = 'admin' );
+
+-- Posts Table
+create table api.posts (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  slug text not null unique,
+  excerpt text,
+  content text not null,
+  published boolean default false,
+  category text,
+  author_id uuid references auth.users(id),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS Policies
+alter table api.posts enable row level security;
+
+create policy "Published posts are viewable by everyone"
+  on api.posts for select
+  using ( published = true );
+
+create policy "Posts are editable by admins only"
+  on api.posts for all
+  using ( auth.role() = 'admin' );
+
+-- Contact Messages Table
+create table api.contact_messages (
+  id uuid default uuid_generate_v4() primary key,
+  name text not null,
+  email text not null,
+  message text not null,
+  status text default 'new',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- RLS Policies
+alter table api.contact_messages enable row level security;
+
+create policy "Messages are insertable by everyone"
+  on api.contact_messages for insert
+  with check ( true );
+
+create policy "Messages are viewable by admins only"
+  on api.contact_messages for select
+  using ( auth.role() = 'admin' );
+
+-- Blog Posts Table
+CREATE TABLE api.blog_posts (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  content text NOT NULL,
+  excerpt text,
+  featured_image text,
+  status text NOT NULL DEFAULT 'draft',
+  author uuid REFERENCES auth.users(id),
+  published_at timestamp with time zone,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  seo jsonb
+);
+
+-- RLS Policies
+ALTER TABLE api.blog_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view published posts" ON api.blog_posts
+  FOR SELECT USING (status = 'published');
+
+CREATE POLICY "Authenticated users can manage posts" ON api.blog_posts
+  USING (auth.role() = 'authenticated');
+
+-- Blog Categories Table
+CREATE TABLE api.blog_categories (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  description text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- RLS Policies
+ALTER TABLE api.blog_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view categories" ON api.blog_categories FOR SELECT TO PUBLIC;
+CREATE POLICY "Authenticated users can manage categories" ON api.blog_categories
+  USING (auth.role() = 'authenticated');
+
+-- Blog Posts Categories Junction Table
+CREATE TABLE api.blog_posts_categories (
+  post_id uuid REFERENCES api.blog_posts(id) ON DELETE CASCADE,
+  category_id uuid REFERENCES api.blog_categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (post_id, category_id)
+);
+
+-- RLS Policies
+ALTER TABLE api.blog_posts_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can manage post categories" ON api.blog_posts_categories
+  USING (auth.role() = 'authenticated');
+
+## API Documentation
 
 ### Database Schema
 
-#### Tables
+All tables are in the `api` schema for security reasons.
 
-1. **blog_posts**
-   ```sql
-   CREATE TABLE api.blog_posts (
-       id BIGSERIAL PRIMARY KEY,
-       title VARCHAR(255) NOT NULL,
-       slug VARCHAR(255) NOT NULL UNIQUE,
-       content TEXT NOT NULL,
-       excerpt TEXT,
-       featured_image TEXT,
-       status VARCHAR(50) DEFAULT 'draft',
-       author VARCHAR(255),
-       created_at TIMESTAMPTZ DEFAULT NOW(),
-       updated_at TIMESTAMPTZ DEFAULT NOW(),
-       seo JSONB DEFAULT '{}'::jsonb
-   );
-   ```
+### Blog Posts
 
-2. **blog_categories**
-   ```sql
-   CREATE TABLE api.blog_categories (
-       id BIGSERIAL PRIMARY KEY,
-       name VARCHAR(255) NOT NULL,
-       slug VARCHAR(255) NOT NULL UNIQUE,
-       description TEXT,
-       created_at TIMESTAMPTZ DEFAULT NOW(),
-       updated_at TIMESTAMPTZ DEFAULT NOW()
-   );
-   ```
+Table: `blog_posts`
 
-3. **blog_posts_categories** (Junction Table)
-   ```sql
-   CREATE TABLE api.blog_posts_categories (
-       post_id BIGINT REFERENCES api.blog_posts(id),
-       category_id BIGINT REFERENCES api.blog_categories(id),
-       PRIMARY KEY (post_id, category_id)
-   );
-   ```
-
-### Automatic Category Creation
-
-When creating or updating a blog post, categories that don't exist will be automatically created. The system will:
-1. Check if the category exists by name
-2. If not found, create a new category with:
-   - Name: As provided
-   - Slug: Auto-generated from name (lowercase, spaces replaced with hyphens)
-   - Description: Empty
-   - Created/Updated timestamps: Current time
-
-Example:
 ```sql
-SELECT api.ensure_category_exists('New Category');
--- Creates category if it doesn't exist:
--- name: "New Category"
--- slug: "new-category"
+CREATE TABLE api.blog_posts (
+  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  title text NOT NULL,
+  slug text UNIQUE NOT NULL,
+  content text NOT NULL,
+  excerpt text,
+  featured_image text,
+  status text NOT NULL DEFAULT 'draft',
+  author uuid REFERENCES auth.users(id),
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+  seo jsonb
+);
+
+-- RLS Policies
+ALTER TABLE api.blog_posts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view published posts" ON api.blog_posts
+  FOR SELECT USING (status = 'published');
+
+CREATE POLICY "Authenticated users can manage posts" ON api.blog_posts
+  USING (auth.role() = 'authenticated');
 ```
 
-### Security
+## API Routes
 
-All tables use Row Level Security (RLS) policies:
-- Read access: Public for published content
-- Write access: Restricted to authenticated users with @marialena-pietri.fr email addresses
+### Blog Management
 
-### Permissions
+All blog management routes are protected and require authentication with a valid @marialena-pietri.fr email.
 
-1. Schema Level:
-   ```sql
-   GRANT USAGE ON SCHEMA api TO anon, authenticated, service_role;
-   GRANT ALL ON SCHEMA api TO postgres, service_role;
-   ```
+#### List Posts
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}`
+- Method: GET
+- Response: Array of blog posts
 
-2. Table Level:
-   - Authenticated users: Full access to all blog tables
-   - Anonymous users: Read-only access to all blog tables
-   - Service role: Full access to all blog tables
+#### Create Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/new`
+- Method: POST
+- Body:
+  ```typescript
+  {
+    title: string;
+    content: string;
+    slug: string;
+    status: 'draft' | 'published';
+  }
+  ```
 
-### Contact Form
+#### Edit Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/[id]/edit`
+- Method: PUT
+- Parameters: `id` (post ID)
+- Body:
+  ```typescript
+  {
+    title?: string;
+    content?: string;
+    slug?: string;
+    status?: 'draft' | 'published';
+  }
+  ```
 
-#### Submit Contact Form
-
-```yaml
-POST /api/v1/contact
-
-Request Body:
-  content:
-    application/json:
-      schema:
-        type: object
-        properties:
-          name: string
-          email: string
-          message: string
-        required:
-          - name
-          - email
-          - message
-
-Response:
-  200:
-    description: Message sent successfully
-  400:
-    description: Invalid input
-  429:
-    description: Too many requests
-```
+#### Delete Post
+- Path: `${SECURE_ROUTES.ADMIN_BLOG}/[id]`
+- Method: DELETE
+- Parameters: `id` (post ID)
 
 ## Appointment System
 
@@ -638,343 +676,307 @@ interface AvailabilitySlot {
   is_active: boolean;
   created_at: string;
 }
-```
 
-### Error Handling
+## Appointments API
 
-All endpoints return standard HTTP status codes:
-- 200: Success
-- 400: Bad Request (invalid input)
-- 401: Unauthorized
-- 403: Forbidden
-- 404: Not Found
-- 500: Server Error
+### Database Schema
 
-Error responses include:
-```typescript
-interface ErrorResponse {
-  error: string;
-  details?: string;
-}
-```
-
-## Realtime Subscriptions
-
-### Using the Realtime Hook
-
-The application provides a custom hook `useRealtimeSubscription` for handling Supabase realtime subscriptions. This hook must be used for all realtime data synchronization to ensure consistency and proper error handling.
-
-```typescript
-import { useRealtimeSubscription } from '../hooks/useRealtimeSubscription';
-
-// Example usage
-function MyComponent() {
-  const { data, loading, error } = useRealtimeSubscription<BlogPost>({
-    table: 'blog_posts',
-    schema: 'api', // Always use 'api' schema
-    event: '*', // or 'INSERT', 'UPDATE', 'DELETE'
-    callback: (payload) => {
-      console.log('Realtime update:', payload);
-    }
-  });
-}
-```
-
-### Important Notes for Realtime Subscriptions
-
-1. **Schema Requirement**
-   - Always use the `api` schema for subscriptions
-   - The hook defaults to `api` schema if not specified
-
-2. **Type Safety**
-   - The hook is generic and type-safe
-   - Your type must extend `{ [key: string]: any }`
-   ```typescript
-   interface BlogPost {
-     id: number;
-     title: string;
-     content: string;
-   }
-   useRealtimeSubscription<BlogPost>({ ... })
+1. **appointment_settings**
+   ```sql
+   CREATE TABLE api.appointment_settings (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       title TEXT NOT NULL,
+       description TEXT,
+       photo_url TEXT,
+       google_calendar_sync_url TEXT,
+       email_reminder_enabled BOOLEAN DEFAULT false,
+       sms_reminder_enabled BOOLEAN DEFAULT false,
+       email_reminder_template TEXT,
+       sms_reminder_template TEXT,
+       created_at TIMESTAMPTZ DEFAULT NOW(),
+       updated_at TIMESTAMPTZ DEFAULT NOW()
+   );
    ```
 
-3. **Channel Naming**
-   - Channel names follow the format: `realtime:${schema}:${table}`
-   - Channels are automatically cleaned up on component unmount
+2. **appointment_durations**
+   ```sql
+   CREATE TABLE api.appointment_durations (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       duration_minutes INTEGER NOT NULL,
+       is_active BOOLEAN DEFAULT true,
+       created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
 
-4. **Event Types**
-   - Support for all Supabase events: `INSERT`, `UPDATE`, `DELETE`, `*`
-   - The `*` event type listens for all changes (default)
+3. **appointment_purposes**
+   ```sql
+   CREATE TABLE api.appointment_purposes (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       title TEXT NOT NULL,
+       description TEXT,
+       is_active BOOLEAN DEFAULT true,
+       created_at TIMESTAMPTZ DEFAULT NOW(),
+       updated_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
 
-5. **Toast Notifications**
-   - Built-in toast notifications for data changes
-   - Messages are in French to match the application's locale
+4. **availability_slots**
+   ```sql
+   CREATE TABLE api.availability_slots (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       day_of_week INTEGER NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+       start_time TIME NOT NULL,
+       end_time TIME NOT NULL,
+       is_active BOOLEAN DEFAULT true,
+       created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
 
-6. **Error Handling**
-   - Errors are caught and available via the `error` return value
-   - Loading state is tracked via the `loading` return value
+5. **appointments**
+   ```sql
+   CREATE TABLE api.appointments (
+       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+       first_name TEXT NOT NULL,
+       last_name TEXT NOT NULL,
+       company_name TEXT NOT NULL,
+       email TEXT NOT NULL,
+       phone TEXT,
+       address TEXT,
+       purpose_id TEXT NOT NULL,
+       message TEXT,
+       appointment_type TEXT NOT NULL CHECK (appointment_type IN ('phone', 'video', 'in_person')),
+       appointment_date TIMESTAMPTZ NOT NULL,
+       duration_minutes INTEGER NOT NULL,
+       reminders_enabled BOOLEAN DEFAULT true,
+       status TEXT NOT NULL DEFAULT 'confirmed' CHECK (status IN ('confirmed', 'cancelled', 'modified')),
+       google_calendar_event_id TEXT,
+       created_at TIMESTAMPTZ DEFAULT NOW(),
+       updated_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
 
-### Example Implementation
+### Endpoints
 
-```typescript
-interface AppointmentData {
-  id: number;
-  first_name: string;
-  last_name: string;
-  date: string;
-}
-
-function AppointmentList() {
-  const { data: appointments, loading, error } = useRealtimeSubscription<AppointmentData>({
-    table: 'appointments',
-    event: '*',
-    callback: (payload) => {
-      // Optional callback for custom handling
-      if (payload.eventType === 'INSERT') {
-        // Handle new appointment
-      }
-    }
-  });
-
-  if (loading) return <div>Chargement...</div>;
-  if (error) return <div>Erreur: {error.message}</div>;
-
-  return (
-    <ul>
-      {appointments.map(appointment => (
-        <li key={appointment.id}>
-          {appointment.first_name} {appointment.last_name}
-        </li>
-      ))}
-    </ul>
-  );
-}
+#### Get Appointments
+```yaml
+GET /api/appointments
+Security:
+  - bearerAuth: []
+Response:
+  200:
+    description: List of appointments
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
 ```
 
-### Technical Requirements
-
-- Requires `@supabase/ssr` version `0.5.2` or higher
-- Requires `@supabase/supabase-js` version `2.48.1` or higher
-- Uses the latest Supabase realtime subscription patterns
-
-## Client-Side Data Fetching
-
-### useSupabaseQuery Hook
-
-A custom hook that uses SWR for efficient data fetching and caching. This hook is the recommended way to fetch data from Supabase in client components.
-
-```typescript
-import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
-
-// Example usage
-const { data, loading, error, mutate } = useSupabaseQuery<YourType>({
-  table: 'your_table',
-  schema: 'api', // default
-  select: '*',
-  filter: { status: 'active' },
-  orderBy: { column: 'created_at', ascending: false }
-});
+#### Create Appointment
+```yaml
+POST /api/appointments
+Security:
+  - bearerAuth: []
+RequestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/AppointmentFormData'
+Response:
+  201:
+    description: Appointment created
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/Appointment'
 ```
 
-#### Options
-
-- `table` (required): The table name to query
-- `schema` (optional): The schema name (defaults to 'api')
-- `select` (optional): The columns to select (defaults to '*')
-- `filter` (optional): An object of column-value pairs to filter by
-- `orderBy` (optional): Sorting configuration { column: string, ascending?: boolean }
-
-#### Returns
-
-- `data`: The query results (typed array)
-- `loading`: Boolean indicating if the request is in progress
-- `error`: Any error that occurred
-- `mutate`: Function to manually revalidate the data
-
-### Data Mutations
-
-For creating, updating, or deleting data, use the `mutateData` function:
-
-```typescript
-import { mutateData } from '../hooks/useSupabaseQuery';
-
-// Example: Create
-const success = await mutateData({
-  table: 'your_table',
-  action: 'INSERT',
-  data: newData
-});
-
-// Example: Update
-const success = await mutateData({
-  table: 'your_table',
-  action: 'UPDATE',
-  data: updatedData,
-  filter: { id: itemId }
-});
-
-// Example: Delete
-const success = await mutateData({
-  table: 'your_table',
-  action: 'DELETE',
-  filter: { id: itemId }
-});
+#### Update Appointment Status
+```yaml
+PATCH /api/appointments/{id}/status
+Security:
+  - bearerAuth: []
+RequestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: [confirmed, cancelled, modified]
+Response:
+  200:
+    description: Appointment status updated
 ```
 
-#### Options
+#### Get Available Time Slots
+```yaml
+GET /api/appointments/available-slots
+Parameters:
+  - name: date
+    in: query
+    required: true
+    schema:
+      type: string
+      format: date
+Response:
+  200:
+    description: List of available time slots
+    content:
+      application/json:
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeSlot'
+```
 
-- `table` (required): The table name
-- `schema` (optional): The schema name (defaults to 'api')
-- `action` (required): 'INSERT' | 'UPDATE' | 'DELETE'
-- `data` (optional): The data to insert or update
-- `filter` (optional): Conditions for update/delete operations
+### Components
 
-### Best Practices
+#### Schemas
 
-1. Always use the `api` schema
-2. Handle loading and error states appropriately
-3. Use TypeScript interfaces for data types
-4. Show feedback to users using the Toast component
-5. Revalidate data after mutations using the `mutate` function
+```yaml
+components:
+  schemas:
+    AppointmentSettings:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        photo_url:
+          type: string
+        google_calendar_sync_url:
+          type: string
+        email_reminder_enabled:
+          type: boolean
+        sms_reminder_enabled:
+          type: boolean
+        email_reminder_template:
+          type: string
+        sms_reminder_template:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
-### Example Components
+    AppointmentDuration:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        duration_minutes:
+          type: integer
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
 
-See the following components for implementation examples:
-- `components/admin/appointments/AppointmentList.tsx`
-- `components/admin/blog/PostEditor.tsx`
+    AppointmentPurpose:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
-## Database Schema
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
 
-### API Schema
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        first_name:
+          type: string
+        last_name:
+          type: string
+        company_name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        purpose_id:
+          type: string
+        message:
+          type: string
+        appointment_type:
+          type: string
+          enum: [phone, video, in_person]
+        appointment_date:
+          type: string
+          format: date-time
+        duration_minutes:
+          type: integer
+        reminders_enabled:
+          type: boolean
+        status:
+          type: string
+          enum: [confirmed, cancelled, modified]
+        google_calendar_event_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
 
-All tables must be created in the `api` schema for security:
-
-```sql
--- Create api schema
-create schema if not exists api;
-
--- Contents Table
-create table api.contents (
-  id uuid default uuid_generate_v4() primary key,
-  slug text not null unique,
-  title text not null,
-  content jsonb not null,
-  type text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- RLS Policies
-alter table api.contents enable row level security;
-
-create policy "Public content is viewable by everyone"
-  on api.contents for select
-  using ( type = 'public' );
-
-create policy "Protected content is viewable by authenticated users only"
-  on api.contents for select
-  using ( type = 'protected' and auth.role() = 'authenticated' );
-
-create policy "Content is editable by admins only"
-  on api.contents for all
-  using ( auth.role() = 'admin' );
-
--- Posts Table
-create table api.posts (
-  id uuid default uuid_generate_v4() primary key,
-  title text not null,
-  slug text not null unique,
-  excerpt text,
-  content text not null,
-  published boolean default false,
-  category text,
-  author_id uuid references auth.users(id),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- RLS Policies
-alter table api.posts enable row level security;
-
-create policy "Published posts are viewable by everyone"
-  on api.posts for select
-  using ( published = true );
-
-create policy "Posts are editable by admins only"
-  on api.posts for all
-  using ( auth.role() = 'admin' );
-
--- Contact Messages Table
-create table api.contact_messages (
-  id uuid default uuid_generate_v4() primary key,
-  name text not null,
-  email text not null,
-  message text not null,
-  status text default 'new',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- RLS Policies
-alter table api.contact_messages enable row level security;
-
-create policy "Messages are insertable by everyone"
-  on api.contact_messages for insert
-  with check ( true );
-
-create policy "Messages are viewable by admins only"
-  on api.contact_messages for select
-  using ( auth.role() = 'admin' );
-
--- Blog Posts Table
-CREATE TABLE blog_posts (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  title text NOT NULL,
-  slug text UNIQUE NOT NULL,
-  content text NOT NULL,
-  excerpt text,
-  featured_image text,
-  status text NOT NULL DEFAULT 'draft',
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  author uuid REFERENCES auth.users(id),
-  seo jsonb
-);
-
--- RLS Policies
-ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public can view published posts" ON blog_posts
-  FOR SELECT USING (status = 'published');
-
-CREATE POLICY "Authenticated users can manage posts" ON blog_posts
-  USING (auth.role() = 'authenticated');
-
--- Blog Categories Table
-CREATE TABLE blog_categories (
-  id uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name text NOT NULL,
-  slug text UNIQUE NOT NULL,
-  description text,
-  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
-  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
-);
-
--- RLS Policies
-ALTER TABLE blog_categories ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Public can view categories" ON blog_categories FOR SELECT TO PUBLIC;
-CREATE POLICY "Authenticated users can manage categories" ON blog_categories
-  USING (auth.role() = 'authenticated');
-
--- Blog Posts Categories Junction Table
-CREATE TABLE blog_posts_categories (
-  post_id uuid REFERENCES blog_posts(id) ON DELETE CASCADE,
-  category_id uuid REFERENCES blog_categories(id) ON DELETE CASCADE,
-  PRIMARY KEY (post_id, category_id)
-);
-
--- RLS Policies
-ALTER TABLE blog_posts_categories ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Authenticated users can manage post categories" ON blog_posts_categories
-  USING (auth.role() = 'authenticated');
+    TimeSlot:
+      type: object
+      properties:
+        start:
+          type: string
+          format: time
+        end:
+          type: string
+          format: time
+        available:
+          type: boolean

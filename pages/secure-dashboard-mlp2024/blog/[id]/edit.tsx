@@ -13,7 +13,7 @@ export default function EditBlogPost() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
-  const { showToast } = useToast();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (id) {
@@ -46,7 +46,7 @@ export default function EditBlogPost() {
       setPost(transformedData);
     } catch (error: any) {
       console.error('Error fetching post:', error);
-      showToast(error.message || 'Erreur lors du chargement de l\'article', 'error');
+      toast.showErrorToast(error.message || 'Erreur lors du chargement de l\'article', 'error');
     } finally {
       setLoading(false);
     }
@@ -57,19 +57,27 @@ export default function EditBlogPost() {
     setLoading(true);
 
     try {
+      const updatedPost = {
+        ...formData,
+        blog_posts_categories: formData.categories.map(categoryId => ({
+          post_id: id,
+          category_id: categoryId
+        }))
+      };
+
       // First update the blog post
       const { error: postError } = await supabase
         .schema('api')
         .from('blog_posts')
         .update({
-          title: formData.title,
-          slug: formData.slug,
-          content: formData.content,
-          excerpt: formData.excerpt,
-          featured_image: formData.featured_image,
-          status: formData.status,
-          seo: formData.seo,
-          author: formData.author
+          title: updatedPost.title,
+          slug: updatedPost.slug,
+          content: updatedPost.content,
+          excerpt: updatedPost.excerpt,
+          featured_image: updatedPost.featured_image,
+          status: updatedPost.status,
+          seo: updatedPost.seo,
+          author: updatedPost.author
         })
         .eq('id', id);
 
@@ -81,37 +89,32 @@ export default function EditBlogPost() {
         .schema('api')
         .from('blog_posts_categories')
         .delete()
-        .eq('blog_post_id', id);
+        .eq('post_id', id);
 
       if (deleteError) throw deleteError;
 
       // Then insert the new category relationships
-      if (formData.categories.length > 0) {
-        const categoryLinks = formData.categories.map(categoryId => ({
-          blog_post_id: id,
-          blog_category_id: categoryId
-        }));
-
+      if (updatedPost.blog_posts_categories.length > 0) {
         const { error: categoriesError } = await supabase
           .schema('api')
           .from('blog_posts_categories')
-          .insert(categoryLinks);
+          .insert(updatedPost.blog_posts_categories);
 
         if (categoriesError) throw categoriesError;
       }
 
-      showToast('Article mis à jour avec succès', 'success');
-      router.push(SECURE_ROUTES.BLOG.LIST);
+      toast.showSuccessToast('Article mis à jour avec succès');
+      router.push(SECURE_ROUTES.ADMIN_BLOG);
     } catch (error: any) {
       console.error('Error updating post:', error);
-      showToast(error.message || 'Erreur lors de la mise à jour de l\'article', 'error');
+      toast.showErrorToast(error.message || 'Erreur lors de la mise à jour de l\'article');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    router.push(SECURE_ROUTES.BLOG.LIST);
+    router.push(SECURE_ROUTES.ADMIN_BLOG);
   };
 
   return (

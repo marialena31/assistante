@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { SECURE_ROUTES } from './config/secureRoutes'
 
+const ALLOWED_EMAIL_DOMAIN = '@marialena-pietri.fr'
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -57,36 +59,37 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Check if the route is an admin route
-  if (pathname.startsWith('/secure-dashboard-mlp2024')) {
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // If there's no user or there's an error, redirect to login
-    if (!user || userError) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = SECURE_ROUTES.SIGNIN
-      return NextResponse.redirect(redirectUrl)
+    // If user is trying to access auth pages while logged in
+    if (pathname.startsWith('/auth-mlp2024') && user) {
+      if (user.email?.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+        return NextResponse.redirect(new URL(SECURE_ROUTES.ADMIN, request.url))
+      }
+      return response
     }
 
-    // Check if user has the correct email domain
-    if (!user.email?.endsWith('@marialena-pietri.fr')) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = SECURE_ROUTES.SIGNIN
-      return NextResponse.redirect(redirectUrl)
+    // If accessing admin pages while not logged in or not admin
+    if (pathname.startsWith('/secure-dashboard-mlp2024')) {
+      if (!user) {
+        return NextResponse.redirect(new URL(SECURE_ROUTES.SIGNIN, request.url))
+      }
+      if (!user.email?.endsWith(ALLOWED_EMAIL_DOMAIN)) {
+        await supabase.auth.signOut()
+        return NextResponse.redirect(new URL(SECURE_ROUTES.SIGNIN, request.url))
+      }
     }
+
+    return response
+  } catch (error) {
+    console.error('Auth error:', error)
+    // Only redirect to signin if trying to access protected routes
+    if (pathname.startsWith('/secure-dashboard-mlp2024')) {
+      return NextResponse.redirect(new URL(SECURE_ROUTES.SIGNIN, request.url))
+    }
+    return response
   }
-
-  // If the route is a login route and user is already logged in, redirect to admin
-  if (pathname === SECURE_ROUTES.SIGNIN) {
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (user && !userError && user.email?.endsWith('@marialena-pietri.fr')) {
-      const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = SECURE_ROUTES.ADMIN
-      return NextResponse.redirect(redirectUrl)
-    }
-  }
-
-  return response
 }
 
 export const config = {

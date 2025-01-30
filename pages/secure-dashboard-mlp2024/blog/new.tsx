@@ -11,7 +11,7 @@ export default function NewBlogPost() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
-  const { showToast } = useToast();
+  const { showSuccessToast, showErrorToast } = useToast();
 
   useEffect(() => {
     checkUser();
@@ -21,22 +21,22 @@ export default function NewBlogPost() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) {
-        router.push(SECURE_ROUTES.LOGIN);
+        router.push(SECURE_ROUTES.SIGNIN);
       }
     } catch (error) {
       console.error('Error checking auth status:', error);
-      router.push(SECURE_ROUTES.LOGIN);
+      router.push(SECURE_ROUTES.SIGNIN);
     }
   };
 
   const handleSave = async (formData: BlogPostFormData) => {
     setLoading(true);
     try {
-      // First, insert the blog post
-      const { data: post, error: postError } = await supabase
+      // First create the blog post
+      const { data: newPost, error: postError } = await supabase
         .schema('api')
         .from('blog_posts')
-        .insert([{
+        .insert({
           title: formData.title,
           slug: formData.slug,
           content: formData.content,
@@ -45,18 +45,17 @@ export default function NewBlogPost() {
           status: formData.status,
           seo: formData.seo,
           author: formData.author
-        }])
+        })
         .select()
         .single();
 
       if (postError) throw postError;
-      if (!post) throw new Error('Failed to create post');
 
-      // Then, if there are categories, insert the category relationships
+      // Then create the category relationships
       if (formData.categories.length > 0) {
         const categoryLinks = formData.categories.map(categoryId => ({
-          blog_post_id: post.id,
-          blog_category_id: categoryId
+          post_id: newPost.id,
+          category_id: categoryId
         }));
 
         const { error: categoriesError } = await supabase
@@ -67,18 +66,18 @@ export default function NewBlogPost() {
         if (categoriesError) throw categoriesError;
       }
 
-      showToast('Article créé avec succès', 'success');
-      router.push(SECURE_ROUTES.BLOG.LIST);
+      showSuccessToast('Article créé avec succès');
+      router.push(SECURE_ROUTES.ADMIN_BLOG);
     } catch (error: any) {
       console.error('Error saving post:', error);
-      showToast(error.message || 'Erreur lors de la création de l\'article', 'error');
+      showErrorToast(error.message || 'Erreur lors de la création de l\'article');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    router.push(SECURE_ROUTES.BLOG.LIST);
+    router.push(SECURE_ROUTES.ADMIN_BLOG);
   };
 
   const emptyPost: Partial<BlogPost> = {

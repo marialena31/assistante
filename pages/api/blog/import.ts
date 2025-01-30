@@ -111,27 +111,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (postError) throw postError;
 
-        // Handle categories
-        if (article.categories?.length) {
-          await Promise.all(article.categories.map(async (categoryName: string) => {
-            const { data: categoryId, error: categoryError } = await supabase
-              .schema('api')
-              .rpc('ensure_category_exists', { category_name: categoryName.trim() });
-
-            if (categoryError) throw categoryError;
-
-            if (categoryId) {
-              const { error: linkError } = await supabase
-                .schema('api')
-                .from('blog_posts_categories')
-                .insert({
-                  post_id: post.id,
-                  category_id: categoryId
-                });
-
-              if (linkError) throw linkError;
-            }
+        // Create category relationships
+        if (article.categories && article.categories.length > 0) {
+          const categoryLinks = article.categories.map(categoryName => ({
+            post_id: post.id,
+            category_name: categoryName.trim()
           }));
+
+          const { error: categoriesError } = await supabase
+            .schema('api')
+            .from('blog_posts_categories')
+            .insert(categoryLinks);
+
+          if (categoriesError) throw categoriesError;
         }
 
         return { success: true, title: article.title };

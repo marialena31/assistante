@@ -1,144 +1,95 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import AdminLayout from '../../components/admin/AdminLayout';
-import { createClient } from '../../utils/supabase/client';
-import { SECURE_ROUTES } from '../../config/secureRoutes';
-import type { Content } from '../../types/database';
-import DynamicForm from '../../components/admin/DynamicForm';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import AdminLayout from '../../components/layout/AdminLayout';
+import TinyMCEEditor from '../../components/admin/TinyMCEEditor';
 import { useToast } from '../../components/ui/Toast';
+import DynamicForm from '../../components/admin/DynamicForm';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useSupabaseQuery, mutateData } from '../../hooks/useSupabaseQuery';
+import { createClient } from '../../utils/supabase/client';
+import { useAuthRedirect } from '../../hooks/useAuthRedirect';
+
+interface Content {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  type: 'page' | 'component';
+  created_at: string;
+  updated_at: string;
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [contents, setContents] = useState<Content[]>([]);
-  const [activeType, setActiveType] = useState<'page' | 'component'>('page');
   const [editingContent, setEditingContent] = useState<Content | null>(null);
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
   const { showToast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const supabase = createClient();
+
+  // Use the custom auth hook
+  useAuthRedirect();
+
+  const toastAdapter = (message: string, type: 'success' | 'error') => {
+    showToast(type === 'success' ? 'Succès' : 'Erreur', message, type);
+  };
+
+  const { data: contents = [], loading: contentsLoading, error: contentsError, mutate: mutateContents } = useSupabaseQuery<Content[]>({
+    table: 'contents',
+    orderBy: { column: 'updated_at', ascending: false }
+  });
 
   useEffect(() => {
-    checkUser();
+    const checkSession = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsAuthenticated(!!user?.email?.endsWith('@marialena-pietri.fr'));
+      } catch (error) {
+        console.error('Session check error:', error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
   }, []);
 
   useEffect(() => {
-    if (user) {
-      loadContents();
+    if (isAuthenticated) {
+      mutateContents();
     }
-  }, [user, activeType]);
+  }, [isAuthenticated, mutateContents]);
 
-  const checkUser = async () => {
+  const handleSave = async (contentData: string) => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) {
-        console.error('Error checking auth status:', error);
-        window.location.href = SECURE_ROUTES.LOGIN;
-        return;
-      }
-      
-      if (!user) {
-        window.location.href = SECURE_ROUTES.LOGIN;
-        return;
-      }
+      const parsedContent = JSON.parse(contentData) as Content;
+      const isNewContent = !parsedContent.id;
 
-      if (!user.email?.endsWith('@marialena-pietri.fr')) {
-        showToast("Vous n'avez pas les droits d'accès administrateur", 'error');
-        await supabase.auth.signOut();
-        window.location.href = SECURE_ROUTES.LOGIN;
-        return;
-      }
-
-      console.log('User authenticated:', user.email);
-      setUser(user);
-      await loadContents();
-    } catch (error) {
-      console.error('Error checking auth status:', error);
-      window.location.href = SECURE_ROUTES.LOGIN;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadContents = async () => {
-    try {
-      console.log('Loading contents for type:', activeType);
-      const { data, error } = await supabase
-        .schema('api')
-        .from('contents')
-        .select('*')
-        .eq('type', activeType)
-        .order('title', { ascending: true });
-
-      if (error) {
-        console.error('Error loading contents:', error);
-        throw error;
-      }
-
-      console.log('Loaded contents:', data);
-      setContents(data || []);
-    } catch (error) {
-      console.error('Error loading contents:', error);
-      setError('Erreur lors du chargement des contenus');
-    }
-  };
-
-  const handleSave = async (newContent: string) => {
-    try {
-      // Parse the content to validate it's proper JSON
-      const parsedContent = JSON.parse(newContent);
-
-      if (editingContent?.id) {
-        // Update existing content
-        const { error } = await supabase
-          .schema('api')
-          .from('contents')
-          .update({
-            title: editingContent.title,
-            slug: editingContent.slug,
-            content: newContent,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingContent.id);
-
-        if (error) throw error;
-
-        // Update local state to reflect changes
-        setEditingContent({
-          ...editingContent,
-          content: newContent,
+      const success = await mutateData({
+        table: 'contents',
+        action: isNewContent ? 'INSERT' : 'UPDATE',
+        data: {
+          title: parsedContent.title,
+          slug: parsedContent.slug,
+          content: parsedContent.content,
+          type: parsedContent.type,
           updated_at: new Date().toISOString()
-        });
-      } else {
-        // Create new content
-        const { error } = await supabase
-          .schema('api')
-          .from('contents')
-          .insert([{
-            title: editingContent?.title || 'Nouveau contenu',
-            content: newContent,
-            type: activeType,
-            slug: editingContent?.slug || 'nouveau-contenu'
-          }]);
+        },
+        filter: isNewContent ? undefined : { id: parsedContent.id }
+      }, toastAdapter, mutateContents);
 
-        if (error) throw error;
+      if (success) {
+        setEditingContent(null);
       }
-
-      // Reload contents to get the latest data
-      await loadContents();
-      // Close the editing modal
-      setEditingContent(null);
-      showToast('Contenu sauvegardé avec succès', 'success');
     } catch (error) {
       console.error('Error saving content:', error);
-      showToast('Une erreur est survenue lors de la sauvegarde. Vérifiez que le contenu est un JSON valide.', 'error');
+      toastAdapter('Une erreur est survenue lors de la sauvegarde. Vérifiez que le contenu est un JSON valide.', 'error');
     }
   };
 
   const handleDelete = async (contentId: number | undefined) => {
     if (!contentId) {
-      showToast('ID de contenu invalide', 'error');
+      toastAdapter('ID de contenu invalide', 'error');
       return;
     }
 
@@ -146,35 +97,18 @@ export default function AdminDashboard() {
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .schema('api')
-        .from('contents')
-        .delete()
-        .eq('id', contentId);
+    const success = await mutateData({
+      table: 'contents',
+      action: 'DELETE',
+      filter: { id: contentId }
+    }, toastAdapter, mutateContents);
 
-      if (error) throw error;
-
-      showToast('Contenu supprimé avec succès', 'success');
-      loadContents();
-    } catch (error: any) {
-      console.error('Error deleting content:', error);
-      showToast(error.message || 'Erreur lors de la suppression du contenu', 'error');
+    if (success) {
+      toastAdapter('Contenu supprimé avec succès', 'success');
     }
   };
 
-  const handleNewContent = () => {
-    const newContent: Partial<Content> = {
-      title: '',
-      content: '',
-      type: activeType,
-      slug: '',
-      properties: {}
-    };
-    setEditingContent(newContent as Content);
-  };
-
-  if (loading) {
+  if (contentsLoading) {
     return (
       <AdminLayout>
         <div className="min-h-screen flex items-center justify-center">
@@ -184,11 +118,11 @@ export default function AdminDashboard() {
     );
   }
 
-  if (error) {
+  if (contentsError) {
     return (
       <AdminLayout>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg font-medium">{error}</div>
+          <div className="text-lg font-medium">{contentsError.message}</div>
         </div>
       </AdminLayout>
     );
@@ -199,36 +133,25 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Tableau de bord</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-600">
-              Connecté en tant que {user?.email}
-            </span>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6">
             <h2 className="text-xl font-semibold mb-4">Gestion du Contenu</h2>
             <div className="space-y-4">
               <button
-                onClick={() => setActiveType('page')}
-                className={`w-full px-4 py-2 rounded-lg transition-all ${
-                  activeType === 'page'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                onClick={() => setEditingContent({
+                  id: 0,
+                  title: '',
+                  content: '',
+                  type: 'page',
+                  slug: '',
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                })}
+                className="block w-full px-4 py-2 text-center bg-primary text-white hover:bg-primary/90 rounded-lg transition-all"
               >
-                Pages
-              </button>
-              <button
-                onClick={() => setActiveType('component')}
-                className={`w-full px-4 py-2 rounded-lg transition-all ${
-                  activeType === 'component'
-                    ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Composants
+                Nouveau Contenu
               </button>
             </div>
           </div>
@@ -277,14 +200,14 @@ export default function AdminDashboard() {
                       }
 
                       const result = await response.json();
-                      showToast(result.message || 'Articles importés avec succès !', 'success');
+                      toastAdapter(result.message || 'Articles importés avec succès !', 'success');
                     } catch (error: unknown) {
                       console.error('Error importing articles:', error);
                       let errorMessage = 'Erreur lors de l\'importation';
                       if (error instanceof Error) {
                         errorMessage = error.message;
                       }
-                      showToast(errorMessage, 'error');
+                      toastAdapter(errorMessage, 'error');
                     }
 
                     // Reset the file input
@@ -347,18 +270,6 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="mb-6">
             <div className="flex space-x-2">
-              <button
-                onClick={handleNewContent}
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Ajouter un nouveau {activeType === 'page' ? 'page' : 'composant'}
-              </button>
-              <button
-                onClick={handleNewContent}
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-              >
-                Ajouter un nouveau {activeType === 'page' ? 'page' : 'composant'}
-              </button>
             </div>
           </div>
 
@@ -378,6 +289,7 @@ export default function AdminDashboard() {
                       Dernière modification: {new Date(content.updated_at).toLocaleString('fr-FR')}
                     </p>
                   </div>
+
                   <div className="space-x-2">
                     <button
                       onClick={() => setEditingContent(content)}
@@ -397,67 +309,33 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
-      </div>
 
-      {editingContent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-4xl flex flex-col h-[90vh]">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h2 className="text-2xl font-bold">
-                {editingContent.id ? 'Modifier' : 'Ajouter'} un {activeType === 'page' ? 'une page' : 'un composant'}
-              </h2>
-              <button
-                onClick={() => setEditingContent(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Titre
-                  </label>
-                  <input
-                    type="text"
-                    value={editingContent.title || ''}
-                    onChange={(e) => setEditingContent({ ...editingContent, title: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Slug
-                  </label>
-                  <input
-                    type="text"
-                    value={editingContent.slug || ''}
-                    onChange={(e) => setEditingContent({ ...editingContent, slug: e.target.value })}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <DynamicForm
-                    content={editingContent.content || JSON.stringify({})}
-                    onSave={(newContent) => {
-                      try {
-                        // Validate that the content is proper JSON
-                        JSON.parse(newContent);
-                        handleSave(newContent);
-                      } catch (e) {
-                        console.error('Invalid JSON content:', e);
-                        showToast('Le contenu n\'est pas un JSON valide', 'error');
-                      }
-                    }}
-                  />
-                </div>
+        {editingContent && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">
+                  {editingContent.id ? 'Modifier' : 'Créer'} un contenu
+                </h2>
+                <button
+                  onClick={() => setEditingContent(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
+
+              <DynamicForm
+                content={JSON.stringify(editingContent)}
+                onSave={handleSave}
+                loading={contentsLoading}
+              />
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </AdminLayout>
   );
 }

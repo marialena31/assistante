@@ -92,14 +92,21 @@ export function useSupabaseQuery<T>(options: QueryOptions) {
 }
 
 // Function to mutate data (create, update, delete)
-export async function mutateData(options: MutateOptions): Promise<boolean> {
+export async function mutateData(
+  options: MutateOptions,
+  showToast?: (message: string, type: 'success' | 'error') => void,
+  mutate?: () => void
+): Promise<boolean> {
   try {
     let query = supabase.schema('api').from(options.table);
 
     switch (options.action) {
       case 'INSERT':
         const { error: insertError } = await query.insert(options.data);
-        if (insertError) throw insertError;
+        if (insertError) {
+          showToast?.('Une erreur est survenue lors de l\'insertion', 'error');
+          throw insertError;
+        }
         break;
 
       case 'UPDATE':
@@ -107,13 +114,19 @@ export async function mutateData(options: MutateOptions): Promise<boolean> {
         const { error: updateError } = await query
           .update(options.data)
           .match(options.filter);
-        if (updateError) throw updateError;
+        if (updateError) {
+          showToast?.('Une erreur est survenue lors de la mise à jour', 'error');
+          throw updateError;
+        }
         break;
 
       case 'DELETE':
         if (!options.filter) throw new Error('Filter is required for DELETE');
         const { error: deleteError } = await query.delete().match(options.filter);
-        if (deleteError) throw deleteError;
+        if (deleteError) {
+          showToast?.('Une erreur est survenue lors de la suppression', 'error');
+          throw deleteError;
+        }
         break;
 
       default:
@@ -125,6 +138,9 @@ export async function mutateData(options: MutateOptions): Promise<boolean> {
     await globalMutate(
       (key) => Array.isArray(key) && key[0] === options.table
     );
+    
+    // Call the provided mutate function if it exists
+    mutate?.();
 
     return true;
   } catch (error) {

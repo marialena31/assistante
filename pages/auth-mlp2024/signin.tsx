@@ -1,141 +1,141 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '../../components/layout/Layout';
-import { createClient } from '../../utils/supabase/client';
-import { SECURE_ROUTES } from '../../config/secureRoutes';
+import { useState, FormEvent } from 'react';
+import { signInWithEmail, resetPassword } from '../../utils/supabase/auth';
 import { useToast } from '../../components/ui/Toast';
+import Layout from '../../components/layout/Layout';
 
 export default function SignIn() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
-  const supabase = createClient();
-  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showSuccessToast, showErrorToast } = useToast();
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user?.email?.endsWith('@marialena-pietri.fr')) {
-        router.push(SECURE_ROUTES.ADMIN);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router]);
-
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleAuth = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+  
     try {
       if (isResetMode) {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}${SECURE_ROUTES.AUTH_CALLBACK}`,
-        });
+        const { error } = await resetPassword(email);
         if (error) throw error;
-        showToast('Vérifiez votre email pour le lien de réinitialisation', 'success');
+        showSuccessToast('Vérifiez votre email pour le lien de réinitialisation');
         setLoading(false);
         return;
       }
-
-      if (!email.endsWith('@marialena-pietri.fr')) {
-        throw new Error("Seuls les utilisateurs avec une adresse email @marialena-pietri.fr peuvent se connecter à cette interface");
-      }
-
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
+  
+      const { error: signInError } = await signInWithEmail(email, password);
       if (signInError) throw signInError;
 
-      if (data?.user?.email?.endsWith('@marialena-pietri.fr')) {
-        showToast('Connexion réussie', 'success');
-      } else {
-        await supabase.auth.signOut();
-        throw new Error("Accès non autorisé");
-      }
+      showSuccessToast('Connexion réussie');
+      
+      // Let the middleware handle the redirect
+      window.location.href = '/secure-dashboard-mlp2024';
+  
     } catch (error: any) {
-      console.error('Authentication error:', error);
+      console.error('Auth error:', error);
       setError(error.message);
-      showToast(error.message, 'error');
+      showErrorToast(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Layout title="Connexion | Administration">
+    <Layout>
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              {isResetMode ? 'Réinitialiser le mot de passe' : 'Connexion à l\'administration'}
+              {isResetMode ? 'Réinitialiser le mot de passe' : 'Connexion'}
             </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              {isResetMode 
+                ? "Entrez votre adresse email pour recevoir un lien de réinitialisation"
+                : "Connectez-vous avec votre adresse email @marialena-pietri.fr"
+              }
+            </p>
           </div>
-          
-          <form className="mt-8 space-y-6" onSubmit={handleAuth}>
-            {error && (
-              <div className="bg-red-50 text-red-500 p-4 rounded-lg text-sm">
-                <p className="font-medium">Erreur:</p>
-                <p>{error}</p>
+
+          {error && (
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">Erreur</h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{error}</p>
+                  </div>
+                </div>
               </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
-              />
             </div>
+          )}
 
-            {!isResetMode && (
+          <form className="mt-8 space-y-6" onSubmit={handleAuth}>
+            <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Mot de passe
+                <label htmlFor="email-address" className="sr-only">
+                  Adresse email
                 </label>
                 <input
-                  id="password"
-                  name="password"
-                  type="password"
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary focus:border-primary"
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Adresse email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-            )}
+              {!isResetMode && (
+                <div>
+                  <label htmlFor="password" className="sr-only">
+                    Mot de passe
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required={!isResetMode}
+                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="Mot de passe"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <button
+                  type="button"
+                  className="font-medium text-indigo-600 hover:text-indigo-500"
+                  onClick={() => setIsResetMode(!isResetMode)}
+                >
+                  {isResetMode
+                    ? 'Retour à la connexion'
+                    : 'Mot de passe oublié ?'}
+                </button>
+              </div>
+            </div>
 
             <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                {loading ? 'Chargement...' : (isResetMode ? 'Envoyer le lien' : 'Se connecter')}
-              </button>
-            </div>
-
-            <div className="text-sm text-center">
-              <button
-                type="button"
-                onClick={() => setIsResetMode(!isResetMode)}
-                className="font-medium text-primary hover:text-primary-dark"
-              >
-                {isResetMode ? 'Retour à la connexion' : 'Mot de passe oublié ?'}
+                {loading
+                  ? 'Chargement...'
+                  : isResetMode
+                  ? 'Envoyer le lien de réinitialisation'
+                  : 'Se connecter'}
               </button>
             </div>
           </form>
